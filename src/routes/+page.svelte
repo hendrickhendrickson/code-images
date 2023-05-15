@@ -1,5 +1,12 @@
 <script lang="ts">
 	import CodeImageCard from './CodeImageCard.svelte';
+	import Textfield from '@smui/textfield';
+	import TextFieldIcon from '@smui/textfield/icon';
+	import Select, { Option } from '@smui/select';
+	import Fab, { Icon as FabIcon } from '@smui/fab';
+
+	let codeName = '';
+	let codeNameCount = 0;
 </script>
 
 <svelte:head>
@@ -7,7 +14,7 @@
 	<meta name="description" content="Svelte demo app" />
 </svelte:head>
 
-<section>
+<main>
 	<div class="grid-container">
 		{#each Array(25) as _unused, i}
 			<CodeImageCard
@@ -19,12 +26,33 @@
 					: ['Tom', 'Jan', 'Schoki', 'Hendrick Hendrickson']}
 				imageUrl={`https://picsum.photos/seed/${Math.random()}/160`}
 				selfGuessed={Math.random() < 0.15}
+				guessColor="#0c48c9"
+				revealedColor="#0c48c9"
 				on:toggleGuess={() => console.log('toggleGuess')}
 				on:pick={() => console.log('pick')}
 			/>
 		{/each}
 	</div>
-</section>
+
+	<div class="codename">
+		<Textfield variant="outlined" bind:value={codeName} label="Codename" width="600px">
+			<TextFieldIcon class="material-icons" slot="leadingIcon">vpn_key</TextFieldIcon>
+		</Textfield>
+		<Select variant="outlined" bind:value={codeNameCount} label="Codenumber">
+			<TextFieldIcon class="material-icons" slot="leadingIcon">numbers</TextFieldIcon>
+			{#each ['0', '1', '2', '3', '4', '5'] as integer}
+				<Option value={integer}>{integer}</Option>
+			{/each}
+		</Select>
+		<div class="flexy">
+			<div class="margins">
+				<Fab color="primary" on:click={() => console.log('click')}>
+					<FabIcon class="material-icons">outgoing_mail</FabIcon>
+				</Fab>
+			</div>
+		</div>
+	</div>
+</main>
 
 <style>
 	* :global(.card-media-square) {
@@ -36,5 +64,12 @@
 		grid-template-columns: repeat(5, 1fr);
 		grid-template-rows: repeat(5, 1fr);
 		gap: 10px; /* Optional - adds spacing between cells */
+	}
+
+	.codename {
+		display: flex;
+		justify-content: center; /* or any other value you prefer */
+		margin-top: 20px;
+		gap: 10px;
 	}
 </style>

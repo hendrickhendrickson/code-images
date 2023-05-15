@@ -9,8 +9,10 @@
 
 	export let disabled = false;
 	export let imageUrl: string;
+	export let revealedColor: string | null;
 	export let playerGuesses: Array<string>;
 	export let selfGuessed: boolean;
+	export let guessColor: string | null;
 
 	function toggleGuess() {
 		dispatch('toggleGuess');
@@ -22,9 +24,17 @@
 
 <div class="card-display">
 	<div class="card-container">
-		<Card style="max-width: 160px; background-color: #0c48c9;" variant="outlined">
+		<Card
+			style={`max-width: 160px;${revealedColor ? ` background-color: ${revealedColor};` : ``}`}
+			variant="outlined"
+		>
 			{#if playerGuesses.length > 0}
-				<Badge position="middle" align="middle-end">{playerGuesses.length}</Badge>
+				<Badge
+					position="middle"
+					align="middle-end"
+					style={`${guessColor ? `background-color: ${guessColor};` : ``}`}
+					>{playerGuesses.length}</Badge
+				>
 			{/if}
 			<PrimaryAction on:click={() => toggleGuess()}>
 				<Media class="card-media-square" aspectRatio="square">
@@ -40,7 +50,9 @@
 				<ActionIcons>
 					<IconButton {disabled} on:click={() => toggleGuess()} aria-label="Guess" title="Guess">
 						{#if selfGuessed}
-							<Icon class="material-icons" style="color: #f04123">thumb_up</Icon>
+							<Icon class="material-icons" style={`${guessColor ? `color: ${guessColor};` : ``}`}
+								>thumb_up</Icon
+							>
 						{:else}
 							<Icon class="material-icons">thumb_up</Icon>
 						{/if}
