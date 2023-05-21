@@ -4,9 +4,14 @@
 	import TextFieldIcon from '@smui/textfield/icon';
 	import Select, { Option } from '@smui/select';
 	import Fab, { Icon as FabIcon } from '@smui/fab';
+	import { initGame } from '../game/game.init';
+	import { objectValues } from '../utils/object.utils';
+	import { cardColor, teamColor } from '../theme/colors.consts';
 
 	let codeName = '';
 	let codeNameCount = 0;
+
+	let gameState = initGame();
 </script>
 
 <svelte:head>
@@ -16,19 +21,15 @@
 
 <main>
 	<div class="grid-container">
-		{#each Array(25) as _unused, i}
+		{#each objectValues(gameState.board) as card}
 			<CodeImageCard
-				disabled={Math.random() < 0.45}
-				playerGuesses={Math.random() > 0.5
-					? []
-					: Math.random() > 0.5
-					? ['Hendrick Hendrickson']
-					: ['Tom', 'Jan', 'Schoki', 'Hendrick Hendrickson']}
-				imageUrl={`https://picsum.photos/seed/${Math.random()}/160`}
-				selfGuessed={Math.random() < 0.15}
-				guessColor="#0c48c9"
-				revealedColor="#0c48c9"
-				on:toggleGuess={() => console.log('toggleGuess')}
+				disabled={card.revealed}
+				playerMarks={card.playerMarks}
+				imageUrl={card.imageUrl}
+				selfMarked={Math.random() < 0.15}
+				markColor="#0c48c9"
+				revealedColor={cardColor(card.teamAssociation)}
+				on:toggleMark={() => console.log('toggleMark')}
 				on:pick={() => console.log('pick')}
 			/>
 		{/each}

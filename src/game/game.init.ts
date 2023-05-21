@@ -1,17 +1,23 @@
-import { ObjectEntries } from '../utils/object/object';
+import { array, scramble } from '../utils/array.utils';
+import { objectEntries, objectFromEntries } from '../utils/object.utils';
 import { defaultRuleSet, imagePixelSize } from './game.consts';
-import type { GameState, RuleSet } from './game.interface';
+import { roles, type GameState, type RuleSet, type TeamId, type PlayerId } from './game.interface';
 
 export function initGame(ruleSet?: RuleSet): GameState {
 	ruleSet = ruleSet ?? defaultRuleSet;
 	return {
-		ruleSet: ruleSet,
-		phase: 'preparation',
+		ruleSet,
+		phase: 'cluePending',
 		players: {},
-		operatives: {}, // TODO
-		spymasters: {}, // TODO
+		teams: objectFromEntries(
+			array(ruleSet.teamCount, (index) => [
+				`team_${index}`,
+				objectFromEntries(roles.map((role) => [`${role}s`, [] satisfies Array<PlayerId>]))
+			])
+		),
 		board: initBoard(ruleSet),
 		turn: `team_0`,
+		currentClue: null,
 		history: [{ type: 'GameInit', timestamp: Date.now() }]
 	};
 }
@@ -19,25 +25,26 @@ export function initGame(ruleSet?: RuleSet): GameState {
 function initBoard(ruleSet: RuleSet): GameState['board'] {
 	const board: GameState['board'] = {};
 
-	const cardAssociations: Array<'innocent' | 'assassin' | `agent_team_${number}`> = [];
+	const cardAssociations: Array<'innocent' | 'assassin' | TeamId> = [];
 	for (let i = 0; i < ruleSet.assassinCardCount; i++) {
 		cardAssociations.push('assassin');
 	}
-	ObjectEntries(ruleSet.pointsGoalByTeam).forEach(([team, points]) => {
+	objectEntries(ruleSet.pointsGoalByTeam).forEach(([team, points]) => {
 		for (let i = 0; i < points; i++) {
-			cardAssociations.push(`agent_${team}`);
+			cardAssociations.push(team);
 		}
 	});
-	for (let i = 0; i < ruleSet.cardCount - cardAssociations.length; i++) {
+	while (cardAssociations.length < ruleSet.cardCount) {
 		cardAssociations.push('innocent');
 	}
+	scramble(cardAssociations);
 
 	for (let index = 0; index < ruleSet.cardCount; index++) {
 		board[`card_${index}`] = {
 			id: `card_${index}`,
 			imageUrl: generateImageUrl(),
 			revealed: false,
-			playerGuesses: [],
+			playerMarks: [],
 			teamAssociation: cardAssociations[index]
 		};
 	}

@@ -1,11 +1,11 @@
 export type GameState = {
 	ruleSet: RuleSet;
-	phase: 'preparation' | 'cluePending' | 'clueGiven' | 'finished';
+	phase: 'cluePending' | 'clueGiven' | 'finished';
 	players: Record<PlayerId, Player>;
-	operatives: Record<TeamId, Array<PlayerId>>;
-	spymasters: Record<TeamId, Array<PlayerId>>;
+	teams: Record<TeamId, Record<`${Role}s`, Array<PlayerId>>>;
 	board: Record<CardId, CardState>;
 	turn: TeamId | null;
+	currentClue: Clue | null;
 	history: Array<HistoryEntry>;
 };
 
@@ -15,6 +15,7 @@ export type RuleSet = {
 	cardCount: number;
 	assassinCardCount: number;
 	pointsGoalByTeam: Record<TeamId, number>;
+	autoJoinTeam: boolean;
 };
 
 export type PlayerId = `player_${number}`;
@@ -22,7 +23,12 @@ export type PlayerId = `player_${number}`;
 export type Player = {
 	id: PlayerId;
 	name: string;
+	team: TeamId | null;
+	role: Role | null;
 };
+
+export const roles = ['operative', 'spymaster'] as const;
+export type Role = (typeof roles)[number];
 
 export type TeamId = `team_${number}`;
 
@@ -31,9 +37,9 @@ export type CardId = `card_${number}`;
 export type CardState = {
 	id: CardId;
 	imageUrl: string;
-	teamAssociation: 'innocent' | 'assassin' | `agent_${TeamId}`;
+	teamAssociation: 'innocent' | 'assassin' | TeamId;
 	revealed: boolean;
-	playerGuesses: Array<PlayerId>;
+	playerMarks: Array<PlayerId>;
 };
 
 export type HistoryEntry = { timestamp: number } & (
@@ -55,8 +61,8 @@ export type ClueGive = {
 };
 
 export type Clue = {
-	codeName: string;
-	codeNumber: number;
+	codename: string;
+	codenumber: number;
 };
 
 export type CardPick = {
@@ -91,17 +97,18 @@ export type ActionResult =
 	  }
 	| {
 			success: false;
-			reason: string;
+			failReason: string;
 	  };
 
 export type GameAction =
 	| PlayerJoinAction
 	| PlayerLeaveAction
 	| TeamSwitchAction
-	| SpymasterBecomeAction
+	| SpymasterPromoteAction
+	| CardMarkAction
 	| CardPickAction
-	| RoundSkipAction
-	| ClueGiveAction;
+	| ClueGiveAction
+	| RoundSkipAction;
 
 export type PlayerJoinAction = {
 	type: 'PlayerJoin';
@@ -117,12 +124,12 @@ export type TeamSwitchAction = {
 	team: TeamId;
 };
 
-export type SpymasterBecomeAction = {
-	type: 'SpymasterBecome';
+export type SpymasterPromoteAction = {
+	type: 'SpymasterPromote';
 };
 
-export type CardGuessAction = {
-	type: 'CardGuess';
+export type CardMarkAction = {
+	type: 'CardMark';
 	card: CardId;
 	active: boolean;
 };

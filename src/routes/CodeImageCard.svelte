@@ -10,12 +10,12 @@
 	export let disabled = false;
 	export let imageUrl: string;
 	export let revealedColor: string | null;
-	export let playerGuesses: Array<string>;
-	export let selfGuessed: boolean;
-	export let guessColor: string | null;
+	export let playerMarks: Array<string>;
+	export let selfMarked: boolean;
+	export let markColor: string | null;
 
-	function toggleGuess() {
-		dispatch('toggleGuess');
+	function toggleMark() {
+		dispatch('toggleMark');
 	}
 	function pick() {
 		dispatch('pick');
@@ -28,29 +28,29 @@
 			style={`max-width: 160px;${revealedColor ? ` background-color: ${revealedColor};` : ``}`}
 			variant="outlined"
 		>
-			{#if playerGuesses.length > 0}
+			{#if playerMarks.length > 0}
 				<Badge
 					position="middle"
 					align="middle-end"
-					style={`${guessColor ? `background-color: ${guessColor};` : ``}`}
-					>{playerGuesses.length}</Badge
+					style={`${markColor ? `background-color: ${markColor};` : ``}`}
+					>{playerMarks.length}</Badge
 				>
 			{/if}
-			<PrimaryAction on:click={() => toggleGuess()}>
+			<PrimaryAction on:click={() => toggleMark()}>
 				<Media class="card-media-square" aspectRatio="square">
 					<MediaContent>
 						<Wrapper>
 							<img src={imageUrl} alt="img" />
-							<Tooltip xPos="start" yPos="above">{playerGuesses.join(', ')}</Tooltip>
+							<Tooltip xPos="start" yPos="above">{playerMarks.join(', ')}</Tooltip>
 						</Wrapper>
 					</MediaContent>
 				</Media>
 			</PrimaryAction>
 			<Actions>
 				<ActionIcons>
-					<IconButton {disabled} on:click={() => toggleGuess()} aria-label="Guess" title="Guess">
-						{#if selfGuessed}
-							<Icon class="material-icons" style={`${guessColor ? `color: ${guessColor};` : ``}`}
+					<IconButton {disabled} on:click={() => toggleMark()} aria-label="Mark" title="Mark">
+						{#if selfMarked}
+							<Icon class="material-icons" style={`${markColor ? `color: ${markColor};` : ``}`}
 								>thumb_up</Icon
 							>
 						{:else}

@@ -7,7 +7,8 @@ export const defaultRuleSet: Readonly<RuleSet> = {
 	maxSpymasterCount: 1,
 	cardCount: 25,
 	assassinCardCount: 1,
-	pointsGoalByTeam: { team_0: 8, team_1: 7 }
+	pointsGoalByTeam: { team_0: 8, team_1: 7 },
+	autoJoinTeam: true
 };
 
 export const playerNameMinimumCharacterLength = 3;
