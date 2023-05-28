@@ -1,3 +1,5 @@
+import type { roles } from './game.consts';
+
 export type GameState = {
 	ruleSet: RuleSet;
 	phase: 'cluePending' | 'clueGiven' | 'finished';
@@ -16,6 +18,19 @@ export type RuleSet = {
 	assassinCardCount: number;
 	pointsGoalByTeam: Record<TeamId, number>;
 	autoJoinTeam: boolean;
+	codenameValidation: null | CodenameValidationLocal;
+};
+
+export type CodenameValidationLocal = 'EN' | 'DE';
+
+export type CodenameValidation = {
+	EN: {
+		wikipedia: boolean;
+	};
+	DE: {
+		wikipedia: boolean;
+		duden: boolean;
+	};
 };
 
 export type PlayerId = `player_${number}`;
@@ -27,7 +42,6 @@ export type Player = {
 	role: Role | null;
 };
 
-export const roles = ['operative', 'spymaster'] as const;
 export type Role = (typeof roles)[number];
 
 export type TeamId = `team_${number}`;

@@ -1,4 +1,4 @@
-import type { ClientGameState, TeamId } from '../game/game.interface';
+import type { ClientGameState, TeamId } from '../routes/game/game.interface';
 
 export function teamColor(team: TeamId): string {
 	switch (team) {

@@ -4,14 +4,16 @@
 	import TextFieldIcon from '@smui/textfield/icon';
 	import Select, { Option } from '@smui/select';
 	import Fab, { Icon as FabIcon } from '@smui/fab';
-	import { initGame } from '../game/game.init';
+	import { initGame } from './game/game.init';
 	import { objectValues } from '../utils/object.utils';
-	import { cardColor, teamColor } from '../theme/colors.consts';
+	import { cardColor } from '../theme/colors.consts';
 
 	let codeName = '';
 	let codeNameCount = 0;
 
 	let gameState = initGame();
+
+	async function giveClue() {}
 </script>
 
 <svelte:head>
@@ -47,7 +49,7 @@
 		</Select>
 		<div class="flexy">
 			<div class="margins">
-				<Fab color="primary" on:click={() => console.log('click')}>
+				<Fab color="primary" on:click={() => giveClue()}>
 					<FabIcon class="material-icons">outgoing_mail</FabIcon>
 				</Fab>
 			</div>

@@ -12,6 +12,6 @@ export function expect<T>(condition: T, message?: string) {
 	}
 }
 
-export function assertUnreachable(error: unknown): never {
+export function assertUnreachable(error?: unknown): never {
 	throw new Error(error ? `unreachable code reached: ${error}` : `unreachable code reached`);
 }

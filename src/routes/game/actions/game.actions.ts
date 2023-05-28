@@ -1,8 +1,7 @@
-import { deleteElement } from '../utils/array.utils';
-import { assertUnreachable } from '../utils/assert.utils';
-import { notImplemented } from '../utils/log.utils';
-import { objectKeys, objectValues } from '../utils/object.utils';
-import { playerNameMaximumCharacterLength, playerNameMinimumCharacterLength } from './game.consts';
+import { deleteElement } from '../../../utils/array.utils';
+import { assertUnreachable } from '../../../utils/assert.utils';
+import { objectKeys, objectValues } from '../../../utils/object.utils';
+import { playerNameMaximumCharacterLength, playerNameMinimumCharacterLength } from '../game.consts';
 import type {
 	ActionResult,
 	CardMarkAction,
@@ -13,14 +12,15 @@ import type {
 	PlayerId,
 	PlayerJoinAction,
 	TeamSwitchAction
-} from './game.interface';
-import { indexOfId, nextTeam } from './game.utils';
+} from '../game.interface';
+import { nextTeam } from '../game.utils';
+import { validateCodename } from '../codename/codename.validation';
 
-export function handleAction(
+export async function handleAction(
 	gameState: GameState,
 	actor: PlayerId,
 	action: GameAction
-): ActionResult {
+): Promise<ActionResult> {
 	switch (action.type) {
 		case 'PlayerJoin':
 			return handlePlayerJoin(gameState, actor, action);
@@ -43,11 +43,11 @@ export function handleAction(
 	}
 }
 
-export function handlePlayerJoin(
+export async function handlePlayerJoin(
 	gameState: GameState,
 	actor: PlayerId,
 	action: PlayerJoinAction
-): ActionResult {
+): Promise<ActionResult> {
 	// action validation
 	if (actor in gameState.players) {
 		return { success: false, failReason: 'player already in the game' };
@@ -97,7 +97,10 @@ export function handlePlayerJoin(
 	return { success: true, updatedGameState: gameState };
 }
 
-export function handlePlayerLeave(gameState: GameState, actor: PlayerId): ActionResult {
+export async function handlePlayerLeave(
+	gameState: GameState,
+	actor: PlayerId
+): Promise<ActionResult> {
 	if (!(actor in gameState.players)) {
 		return { success: false, failReason: 'player not in the game' };
 	}
@@ -107,11 +110,11 @@ export function handlePlayerLeave(gameState: GameState, actor: PlayerId): Action
 	return { success: true, updatedGameState: gameState };
 }
 
-export function handleTeamSwitch(
+export async function handleTeamSwitch(
 	gameState: GameState,
 	actor: PlayerId,
 	action: TeamSwitchAction
-): ActionResult {
+): Promise<ActionResult> {
 	// action validation
 	if (!(actor in gameState.players)) {
 		return { success: false, failReason: 'player not in the game' };
@@ -142,7 +145,10 @@ export function handleTeamSwitch(
 	return { success: true, updatedGameState: gameState };
 }
 
-export function handleSpymasterPromote(gameState: GameState, actor: PlayerId): ActionResult {
+export async function handleSpymasterPromote(
+	gameState: GameState,
+	actor: PlayerId
+): Promise<ActionResult> {
 	if (!(actor in gameState.players)) {
 		return { success: false, failReason: 'player not in the game' };
 	}
@@ -168,11 +174,11 @@ export function handleSpymasterPromote(gameState: GameState, actor: PlayerId): A
 	return { success: true, updatedGameState: gameState };
 }
 
-export function handleCardMark(
+export async function handleCardMark(
 	gameState: GameState,
 	actor: PlayerId,
 	action: CardMarkAction
-): ActionResult {
+): Promise<ActionResult> {
 	// action validation
 	if (!(actor in gameState.players)) {
 		return { success: false, failReason: 'player not in the game' };
@@ -218,11 +224,11 @@ export function handleCardMark(
 	return { success: true, updatedGameState: gameState };
 }
 
-export function handleCardPick(
+export async function handleCardPick(
 	gameState: GameState,
 	actor: PlayerId,
 	action: CardPickAction
-): ActionResult {
+): Promise<ActionResult> {
 	// action validation
 	if (!(actor in gameState.players)) {
 		return { success: false, failReason: 'player not in the game' };
@@ -273,11 +279,11 @@ export function handleCardPick(
 	return { success: true, updatedGameState: gameState };
 }
 
-export function handleGlueGive(
+export async function handleGlueGive(
 	gameState: GameState,
 	actor: PlayerId,
 	action: ClueGiveAction
-): ActionResult {
+): Promise<ActionResult> {
 	// action validation
 	if (!(actor in gameState.players)) {
 		return { success: false, failReason: 'player not in the game' };
@@ -315,8 +321,16 @@ export function handleGlueGive(
 		};
 	}
 
-	const codenameValidation = validateCodename(action.clue.codename);
-	if (codenameValidation !== true) {
+	const codenameValidation = await validateCodename(
+		action.clue.codename,
+		gameState.ruleSet.codenameValidation
+	);
+	if (
+		!(
+			codenameValidation === true ||
+			objectValues(codenameValidation).some((validation) => validation === true)
+		)
+	) {
 		return { success: false, failReason: 'codename not allowed' };
 	}
 
@@ -327,11 +341,10 @@ export function handleGlueGive(
 	return { success: true, updatedGameState: gameState };
 }
 
-export function validateCodename(codename: string): boolean {
-	return true; // TODO implement
-}
-
-export function handleRoundSkip(gameState: GameState, actor: PlayerId): ActionResult {
+export async function handleRoundSkip(
+	gameState: GameState,
+	actor: PlayerId
+): Promise<ActionResult> {
 	// action validation
 	if (!(actor in gameState.players)) {
 		return { success: false, failReason: 'player not in the game' };

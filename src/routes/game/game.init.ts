@@ -1,7 +1,7 @@
-import { array, scramble } from '../utils/array.utils';
-import { objectEntries, objectFromEntries } from '../utils/object.utils';
-import { defaultRuleSet, imagePixelSize } from './game.consts';
-import { roles, type GameState, type RuleSet, type TeamId, type PlayerId } from './game.interface';
+import { array, scramble } from '../../utils/array.utils';
+import { objectEntries, objectFromEntries } from '../../utils/object.utils';
+import { defaultRuleSet, imagePixelSize, roles } from './game.consts';
+import type { GameState, RuleSet, TeamId } from './game.interface';
 
 export function initGame(ruleSet?: RuleSet): GameState {
 	ruleSet = ruleSet ?? defaultRuleSet;
@@ -12,7 +12,7 @@ export function initGame(ruleSet?: RuleSet): GameState {
 		teams: objectFromEntries(
 			array(ruleSet.teamCount, (index) => [
 				`team_${index}`,
-				objectFromEntries(roles.map((role) => [`${role}s`, [] satisfies Array<PlayerId>]))
+				objectFromEntries(roles.map((role) => [`${role}s`, []]))
 			])
 		),
 		board: initBoard(ruleSet),

@@ -46,5 +46,10 @@
 		"vite": "^4.3.0",
 		"vitest": "^0.25.3"
 	},
-	"type": "module"
+	"type": "module",
+	"dependencies": {
+		"axios": "^1.4.0",
+		"puppeteer": "^20.3.0",
+		"uuid": "^9.0.0"
+	}
 }
