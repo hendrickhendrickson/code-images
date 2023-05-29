@@ -30,6 +30,7 @@ export type CodenameValidation = {
 	DE: {
 		wikipedia: boolean;
 		duden: boolean;
+		hm: boolean;
 	};
 };
 
