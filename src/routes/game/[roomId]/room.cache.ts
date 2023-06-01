@@ -34,3 +34,7 @@ export async function updateRoom(
 function generateRandomRoomId(): RoomId {
 	return `${faker.word.adjective()}-${faker.word.adjective()}-${faker.word.noun()}`;
 }
+
+export async function getGameState(room: string): Promise<GameState | null> {
+	return room in roomCache ? roomCache[room as RoomId].state ?? null : null;
+}

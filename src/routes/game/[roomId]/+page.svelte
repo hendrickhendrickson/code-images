@@ -5,14 +5,13 @@
 	import TextFieldIcon from '@smui/textfield/icon';
 	import Select, { Option } from '@smui/select';
 	import Fab, { Icon as FabIcon } from '@smui/fab';
-	import { initGame } from '../game.init';
 	import { objectValues } from '../../../utils/object.utils';
 	import { cardColor } from '../../../theme/colors.consts';
 
 	let codeName = '';
 	let codeNameCount = 0;
 
-	let gameState = initGame();
+	export let data;
 
 	async function giveClue() {}
 </script>
@@ -23,14 +22,14 @@
 </svelte:head>
 
 <main>
-	<LoginModal></LoginModal>
+	<LoginModal />
 	<div class="grid-container">
-		{#each objectValues(gameState.board) as card}
+		{#each objectValues(data.gameState.board) as card}
 			<CodeImageCard
 				disabled={card.revealed}
 				playerMarks={card.playerMarks}
 				imageUrl={card.imageUrl}
-				selfMarked={Math.random() < 0.15}
+				selfMarked={false}
 				markColor="#0c48c9"
 				revealedColor={cardColor(card.teamAssociation)}
 				on:toggleMark={() => console.log('toggleMark')}
@@ -60,7 +59,6 @@
 </main>
 
 <style>
-
 	.grid-container {
 		display: grid;
 		grid-template-columns: repeat(5, 1fr);

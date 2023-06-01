@@ -26,3 +26,10 @@ export function objectFromEntries<TKey extends PropertyKey, TValue>(
 ): Record<TKey, TValue> {
 	return Object.fromEntries(entries) as Record<TKey, TValue>;
 }
+
+export function objectMap<TKey extends PropertyKey, TValue, TMappedValue>(
+	record: Record<TKey, TValue>,
+	mapFn: (entry: [key: TKey, value: TValue]) => TMappedValue
+): Record<TKey, TMappedValue> {
+	return objectFromEntries(objectEntries(record).map(([key, value]) => [key, mapFn([key, value])]));
+}
