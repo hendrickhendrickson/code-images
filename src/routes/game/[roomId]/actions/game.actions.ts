@@ -1,7 +1,10 @@
-import { deleteElement } from '../../../utils/array.utils';
-import { assertUnreachable } from '../../../utils/assert.utils';
-import { objectKeys, objectValues } from '../../../utils/object.utils';
-import { playerNameMaximumCharacterLength, playerNameMinimumCharacterLength } from '../game.consts';
+import { deleteElement } from '../../../../utils/array.utils';
+import { assertUnreachable } from '../../../../utils/assert.utils';
+import { objectKeys, objectValues } from '../../../../utils/object.utils';
+import {
+	playerNameMaximumCharacterLength,
+	playerNameMinimumCharacterLength
+} from '../../game.consts';
 import type {
 	ActionResult,
 	CardMarkAction,
@@ -12,9 +15,9 @@ import type {
 	PlayerId,
 	PlayerJoinAction,
 	TeamSwitchAction
-} from '../game.interface';
-import { nextTeam } from '../game.utils';
-import { validateCodename } from '../codename/codename.validation';
+} from '../../game.interface';
+import { nextTeam } from '../../game.utils';
+import { validateCodename } from '../../codename/codename.validation';
 
 export async function handleAction(
 	gameState: GameState,
@@ -68,20 +71,18 @@ export async function handlePlayerJoin(
 	}
 
 	// action execution
-	const assignedTeam = gameState.ruleSet.autoJoinTeam
-		? objectKeys(gameState.teams).reduce((smallestTeam, currentTeam) =>
-				objectValues(gameState.teams[currentTeam]).reduce(
-					(totalTeamPlayerCount, playerArray) => totalTeamPlayerCount + playerArray.length,
-					0
-				) <
-				objectValues(gameState.teams[smallestTeam]).reduce(
-					(totalTeamPlayerCount, playerArray) => totalTeamPlayerCount + playerArray.length,
-					0
-				)
-					? currentTeam
-					: smallestTeam
-		  )
-		: null;
+	const assignedTeam = objectKeys(gameState.teams).reduce((smallestTeam, currentTeam) =>
+		objectValues(gameState.teams[currentTeam]).reduce(
+			(totalTeamPlayerCount, playerArray) => totalTeamPlayerCount + playerArray.length,
+			0
+		) <
+		objectValues(gameState.teams[smallestTeam]).reduce(
+			(totalTeamPlayerCount, playerArray) => totalTeamPlayerCount + playerArray.length,
+			0
+		)
+			? currentTeam
+			: smallestTeam
+	);
 
 	gameState.players[actor] = {
 		id: actor,

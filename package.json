@@ -23,10 +23,12 @@
 		"@smui/button": "^7.0.0-beta.8",
 		"@smui/card": "^7.0.0-beta.8",
 		"@smui/dialog": "^7.0.0-beta.8",
+		"@smui/drawer": "^7.0.0-beta.8",
 		"@smui/fab": "^7.0.0-beta.8",
 		"@smui/layout-grid": "^7.0.0-beta.8",
 		"@smui/select": "^7.0.0-beta.8",
 		"@smui/slider": "^7.0.0-beta.8",
+		"@smui/snackbar": "^7.0.0-beta.8",
 		"@smui/textfield": "^7.0.0-beta.8",
 		"@smui/tooltip": "^7.0.0-beta.8",
 		"@sveltejs/adapter-auto": "^2.0.0",
@@ -51,6 +53,7 @@
 	"dependencies": {
 		"@faker-js/faker": "^8.0.2",
 		"axios": "^1.4.0",
+		"decimal.js": "^10.4.3",
 		"puppeteer": "^20.3.0",
 		"uuid": "^9.0.0"
 	}

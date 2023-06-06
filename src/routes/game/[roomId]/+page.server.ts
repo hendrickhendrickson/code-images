@@ -1,12 +1,17 @@
 import { error } from '@sveltejs/kit';
-import { getGameState } from './room.cache';
+import type { RoomId } from './room.cache';
 import { obfuscateGameState } from '../game.utils';
+import { roomCache } from './room.cache';
 
-export async function load({ params }) {
-	const gameState = await getGameState(params.roomId);
+export async function load({ params, depends }) {
+	// const gameState = await getGameState(params.roomId);
 
-	if (gameState) {
-		return { gameState: obfuscateGameState(gameState) };
+	depends('gameState');
+	if (params.roomId in roomCache && roomCache[params.roomId as RoomId]) {
+		return {
+			room: params.roomId,
+			gameState: obfuscateGameState(roomCache[params.roomId as RoomId].state)
+		};
 	}
 
 	throw error(404, 'Not found');

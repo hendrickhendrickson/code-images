@@ -1,13 +1,15 @@
-import type { GameState } from '../game.interface';
+import { objectValues } from '../../../utils/object.utils';
+import type { GameState, PlayerId } from '../game.interface';
 import { faker } from '@faker-js/faker';
 
 export type RoomId = `${string}-${string}-${string}`;
 export type Room = {
 	id: RoomId;
 	state: GameState;
+	subscribers: Record<PlayerId, (gameState: GameState) => void>;
 };
 
-const roomCache: Record<RoomId, Room> = {};
+export const roomCache: Record<RoomId, Room> = {};
 
 export function createRoom(state: GameState) {
 	let roomId = generateRandomRoomId();
@@ -17,7 +19,8 @@ export function createRoom(state: GameState) {
 
 	roomCache[roomId] = {
 		id: roomId,
-		state
+		state,
+		subscribers: {}
 	};
 
 	return roomId;
@@ -25,10 +28,11 @@ export function createRoom(state: GameState) {
 
 export async function updateRoom(
 	roomId: RoomId,
-	updateFunc: (state: GameState) => GameState
+	updateFunc: (state: GameState) => Promise<GameState>
 ): Promise<void> {
-	roomCache[roomId].state = updateFunc(roomCache[roomId].state);
-	return Promise.resolve();
+	const updatedGameState = await updateFunc(roomCache[roomId].state);
+	roomCache[roomId].state = updatedGameState;
+	objectValues(roomCache[roomId].subscribers).forEach((callback) => callback(updatedGameState));
 }
 
 function generateRandomRoomId(): RoomId {
@@ -37,4 +41,14 @@ function generateRandomRoomId(): RoomId {
 
 export async function getGameState(room: string): Promise<GameState | null> {
 	return room in roomCache ? roomCache[room as RoomId].state ?? null : null;
+}
+
+export function subscribeRoom(
+	room: RoomId,
+	subscriber: PlayerId,
+	callback: (gameState: GameState) => void
+) {
+	if (roomCache[room]) {
+		roomCache[room].subscribers[subscriber] = callback;
+	}
 }

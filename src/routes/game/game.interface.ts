@@ -17,7 +17,6 @@ export type RuleSet = {
 	cardCount: number;
 	assassinCardCount: number;
 	pointsGoalByTeam: Record<TeamId, number>;
-	autoJoinTeam: boolean;
 	codenameValidation: null | CodenameValidationLocal;
 };
 
@@ -34,12 +33,12 @@ export type CodenameValidation = {
 	};
 };
 
-export type PlayerId = `player_${number}`;
+export type PlayerId = `player_${string}`;
 
 export type Player = {
 	id: PlayerId;
 	name: string;
-	team: TeamId | null;
+	team: TeamId;
 	role: Role | null;
 };
 

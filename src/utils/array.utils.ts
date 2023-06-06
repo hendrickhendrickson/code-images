@@ -2,11 +2,7 @@ export function array<T>(
 	length: number,
 	constructor: (index: number, array: Array<T>) => T
 ): Array<T> {
-	const array: Array<T> = [];
-	for (let index = 0; index < length; index++) {
-		array.push(constructor(index, array));
-	}
-	return array;
+	return [...Array(length)].map((_, index, array) => constructor(index, array));
 }
 
 export function arrayify<T>(t: T | T[] | undefined | null): T[] {

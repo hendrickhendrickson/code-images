@@ -37,4 +37,14 @@
 	<Button variant="outlined" on:click={() => (open = true)}>
 		<Label>Login</Label>
 	</Button>
+{:else}
+	<Button
+		variant="outlined"
+		on:click={() => {
+			localStorage.removeItem('playerName');
+			playerNameStore.set(null);
+		}}
+	>
+		<Label>Logout</Label>
+	</Button>
 {/if}

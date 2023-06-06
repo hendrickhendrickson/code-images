@@ -8,7 +8,6 @@ export const defaultRuleSet: Readonly<RuleSet> = {
 	cardCount: 25,
 	assassinCardCount: 1,
 	pointsGoalByTeam: { team_0: 8, team_1: 7 },
-	autoJoinTeam: true,
 	codenameValidation: 'DE'
 };
 
