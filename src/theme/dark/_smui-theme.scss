@@ -4,7 +4,7 @@
 
 // Svelte Colors! (Dark Theme)
 @use '@material/theme/index' as theme with (
-  $primary: #f04123,
+  $primary: #12d600,
   $secondary: color.scale(#676778, $whiteness: -10%),
   $surface: color.adjust(color-palette.$grey-900, $blue: +4),
   $background: #161616,
@@ -18,6 +18,8 @@
 // See https://github.com/material-components/material-components-web/tree/v14.0.0/packages/mdc-theme
 
 @use '@material/theme/theme-color';
+
+@use '@material/typography/mdc-typography';
  
 .mdc-snackbar.demo-success {
   @include snackbar.fill-color(color-palette.$green-500);

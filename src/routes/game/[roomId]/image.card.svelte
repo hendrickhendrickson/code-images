@@ -9,7 +9,9 @@
 
 	export let disabled = false;
 	export let imageUrl: string;
-	export let revealedColor: string | null;
+	export let revealed: boolean;
+	export let cardColor: string | null;
+	export let imageColor: string | null;
 	export let playerMarks: Array<string>;
 	export let selfMarked: boolean;
 	export let markColor: string | null;
@@ -25,7 +27,9 @@
 <div class="card-display">
 	<div class="card-container">
 		<Card
-			style={`max-width: 160px;${revealedColor ? ` background-color: ${revealedColor};` : ``}`}
+			style={`${imageColor ? `outline: ${imageColor} solid 3px` : ''};max-width: 160px;${
+				cardColor ? ` background-color: ${cardColor};` : ``
+			}`}
 			variant="outlined"
 		>
 			{#if playerMarks.length > 0}
@@ -40,8 +44,14 @@
 				<Media class="card-media-square" aspectRatio="square">
 					<MediaContent>
 						<Wrapper>
-							<img src={imageUrl} alt="img" />
-							<Tooltip xPos="start" yPos="above">{playerMarks.join(', ')}</Tooltip>
+							<img
+								src={imageUrl}
+								alt="img"
+								style={revealed ? `filter: url('#${imageColor}');` : ''}
+							/>
+							{#if playerMarks.length > 0}
+								<Tooltip xPos="start" yPos="above">{playerMarks.join(', ')}</Tooltip>
+							{/if}
 						</Wrapper>
 					</MediaContent>
 				</Media>

@@ -38,7 +38,7 @@
 		<Label>Login</Label>
 	</Button>
 {:else}
-	<Button
+	<!-- <Button
 		variant="outlined"
 		on:click={() => {
 			localStorage.removeItem('playerName');
@@ -46,5 +46,5 @@
 		}}
 	>
 		<Label>Logout</Label>
-	</Button>
+	</Button> -->
 {/if}

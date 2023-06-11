@@ -52,3 +52,7 @@ export function subscribeRoom(
 		roomCache[room].subscribers[subscriber] = callback;
 	}
 }
+
+export function unsubscribeRoom(room: RoomId, subscriber: PlayerId) {
+	delete roomCache[room]?.subscribers[subscriber];
+}

@@ -1,13 +1,13 @@
 import { objectMap } from '../../utils/object.utils';
-import type { CardId, ClientGameState, GameState, PlayerId, TeamId } from './game.interface';
+import type { CardId, ClientGameState, GameState, TeamId } from './game.interface';
 
-export function indexOfId(id: PlayerId | TeamId | CardId): number {
+export function indexOfId(id: TeamId | CardId): number {
 	return +id.split('_')[1];
 }
 
-export function typeOfId(id: PlayerId | TeamId | CardId): 'player' | 'team' | 'card' {
-	return id.split('_')[0] as 'player' | 'team' | 'card';
-}
+// export function typeOfId(id: TeamId | CardId): 'player' | 'team' | 'card' {
+// 	return id.split('_')[0] as 'player' | 'team' | 'card';
+// }
 
 export function nextTeam(team: TeamId, teamCount: number): TeamId {
 	const teamIndex = indexOfId(team);
@@ -22,4 +22,14 @@ export function obfuscateGameState(gameState: GameState): ClientGameState {
 			teamAssociation: card.revealed ? card.teamAssociation : 'unknown'
 		}))
 	};
+}
+
+function teamNameByIndex(index: number): string {
+	if (index === 0) return 'Red';
+	if (index === 1) return 'Blue';
+	return `No-Name`;
+}
+
+export function teamName(team: TeamId): string {
+	return `Team ${teamNameByIndex(indexOfId(team))}`;
 }

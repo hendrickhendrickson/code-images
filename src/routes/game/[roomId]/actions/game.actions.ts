@@ -95,6 +95,8 @@ export async function handlePlayerJoin(
 		gameState.teams[assignedTeam].operatives.push(actor);
 	}
 
+	// gameState.history.push({type: ""}) // TODO add history item for player join?
+
 	return { success: true, updatedGameState: gameState };
 }
 
@@ -257,25 +259,40 @@ export async function handleCardPick(
 
 	// action execution
 	gameState.board[action.card].revealed = true;
+	gameState.board[action.card].playerMarks = [];
+	gameState.history.push({ type: 'CardPick', actor, card: action.card, timestamp: Date.now() });
 	const cardTeamAssociation = gameState.board[action.card].teamAssociation;
 	if (cardTeamAssociation === 'assassin') {
 		gameState.phase = 'finished';
+		objectValues(gameState.board).forEach((card) => (card.playerMarks = []));
+		gameState.history.push({
+			type: 'GameFinished',
+			winningTeams: objectKeys(gameState.teams).filter((team) => team !== gameState.turn),
+			timestamp: Date.now()
+		});
 	} else if (cardTeamAssociation === 'innocent') {
 		gameState.phase = 'cluePending';
 		gameState.turn = nextTeam(gameState.turn, gameState.ruleSet.teamCount);
+		objectValues(gameState.board).forEach((card) => (card.playerMarks = []));
 	} else {
 		if (
 			objectValues(gameState.board).filter(
-				(card) => !card.revealed && card.teamAssociation === gameState.players[actor].team
+				(card) => !card.revealed && card.teamAssociation === cardTeamAssociation
 			).length <= 0
 		) {
 			gameState.phase = 'finished';
+			objectValues(gameState.board).forEach((card) => (card.playerMarks = []));
+			gameState.history.push({
+				type: 'GameFinished',
+				winningTeams: [cardTeamAssociation],
+				timestamp: Date.now()
+			});
 		} else if (cardTeamAssociation !== gameState.turn) {
 			gameState.phase = 'cluePending';
 			gameState.turn = nextTeam(gameState.turn, gameState.ruleSet.teamCount);
+			objectValues(gameState.board).forEach((card) => (card.playerMarks = []));
 		}
 	}
-	objectValues(gameState.board).forEach((card) => (card.playerMarks = []));
 
 	return { success: true, updatedGameState: gameState };
 }
@@ -339,6 +356,8 @@ export async function handleGlueGive(
 	gameState.currentClue = action.clue;
 	gameState.phase = 'clueGiven';
 
+	gameState.history.push({ type: 'ClueGive', actor, clue: action.clue, timestamp: Date.now() });
+
 	return { success: true, updatedGameState: gameState };
 }
 
@@ -367,6 +386,8 @@ export async function handleRoundSkip(
 	gameState.phase = 'cluePending';
 	gameState.turn = nextTeam(gameState.turn, gameState.ruleSet.teamCount);
 	objectValues(gameState.board).forEach((card) => (card.playerMarks = []));
+
+	gameState.history.push({ type: 'RoundSkip', actor, timestamp: Date.now() });
 
 	return { success: true, updatedGameState: gameState };
 }

@@ -1,20 +1,27 @@
-import { type RoomId, subscribeRoom, getGameState } from './room.cache.js';
-
+import { type RoomId, subscribeRoom, getGameState, unsubscribeRoom } from './room.cache.js';
+import { v4 as uuidV4 } from 'uuid';
 export async function GET(requestEvent) {
 	requestEvent.request.headers;
 
-	// const data = await requestEvent.request.json();
+	let data;
+	try {
+		data = await requestEvent.request.json();
+	} catch (error) {
+		/* empty */
+	}
+
+	const subscriberId = data?.player ?? uuidV4();
 
 	const stream = new ReadableStream({
 		start(controller) {
 			controller.enqueue(JSON.stringify(getGameState(requestEvent.params.roomId as RoomId)));
 
-			subscribeRoom(requestEvent.params.roomId as RoomId, 'player_420', (gameState) => {
+			subscribeRoom(requestEvent.params.roomId as RoomId, subscriberId, () => {
 				controller.enqueue('event: message\ndata:\n\n');
 			});
 		},
 		cancel() {
-			console.log('ReadableStream cancelled');
+			unsubscribeRoom(requestEvent.params.roomId as RoomId, subscriberId);
 		}
 	});
 	const response = new Response(stream, {

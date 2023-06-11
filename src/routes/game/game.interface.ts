@@ -33,7 +33,7 @@ export type CodenameValidation = {
 	};
 };
 
-export type PlayerId = `player_${string}`;
+export type PlayerId = string; //`player_${string}`;
 
 export type Player = {
 	id: PlayerId;

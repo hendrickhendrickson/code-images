@@ -3,7 +3,7 @@ import puppeteer from 'puppeteer';
 const url = 'https://www.duden.de/rechtschreibung';
 
 export async function validateDuden(codename: string): Promise<boolean> {
-	const browser = await puppeteer.launch();
+	const browser = await puppeteer.launch({ headless: 'new' });
 	const page = await browser.newPage();
 
 	const cleanedSearchWord = codename

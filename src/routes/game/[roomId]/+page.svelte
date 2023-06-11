@@ -5,83 +5,88 @@
 	import TextFieldIcon from '@smui/textfield/icon';
 	import Select, { Option } from '@smui/select';
 	import Fab, { Icon as FabIcon } from '@smui/fab';
-	import { objectValues } from '../../../utils/object.utils';
-	import { cardColor } from '../../../theme/colors.consts';
-	import PlayerListCard from './playerList.card.svelte';
-	import Drawer, { Content } from '@smui/drawer';
+	import { objectEntries, objectKeys, objectValues } from '../../../utils/object.utils';
+	import { cardColor, teamColor } from '../../../theme/colors.consts';
+	import TeamCard from './team.card.svelte';
+	import Drawer, { Content as DrawerContent } from '@smui/drawer';
 	import { onMount } from 'svelte';
 	import { log } from '../../../utils/log.utils';
 	import axios from 'axios';
-	import type {
-		CardMarkAction,
-		ClueGiveAction,
-		PlayerJoinAction,
-		SpymasterPromoteAction
-	} from '../game.interface';
+	import type { GameAction, PlayerId } from '../game.interface';
 	import { invalidate } from '$app/navigation';
 	import Snackbar, { Label, Actions } from '@smui/snackbar';
 	import IconButton from '@smui/icon-button';
+	import Button from '@smui/button';
+	import { playerNameStore } from './playerName.store';
+	import { obfuscateGameState, teamName } from '../game.utils';
+	import Card, { Content as CardContent } from '@smui/card';
+	import List, { Item, Text } from '@smui/list';
 
 	let codename = '';
-	let codenumber = 0;
+	let codenumber = '0';
 
 	export let data;
 
-	$: () => {
-		console.log(data);
-	};
+	$: team = (() => {
+		if ($playerNameStore && data) {
+			return data.gameState.players[$playerNameStore as PlayerId]?.team ?? null;
+		}
+		return null;
+	})();
+
+	$: role = (() => {
+		if ($playerNameStore && data) {
+			return data.gameState.players[$playerNameStore as PlayerId]?.role ?? null;
+		}
+		return null;
+	})();
+
+	$: clientGameState = role === 'spymaster' ? data.gameState : obfuscateGameState(data.gameState);
 
 	async function subscribe() {
-		await axios.post(`/game/${data.room}/actions`, {
-			player: 'player_1337',
-			action: {
-				type: 'PlayerJoin',
-				name: 'player_1337'
-			} satisfies PlayerJoinAction
-		});
-
-		await axios.post(`/game/${data.room}/actions`, {
-			player: 'player_1337',
-			action: {
-				type: 'SpymasterPromote'
-			} satisfies SpymasterPromoteAction
-		});
-
 		const sse = new EventSource(`/game/${data.room}`);
+		sse.onopen = () => {
+			const playerName = $playerNameStore;
+			if (playerName) {
+				act({
+					type: 'PlayerJoin',
+					name: playerName
+				});
+			} else {
+				playerNameStore.subscribe((playerName) =>
+					act({
+						type: 'PlayerJoin',
+						name: `${playerName}`
+					})
+				);
+			}
+		};
 		sse.onerror = (err) => log(err);
 		sse.onmessage = () => {
 			log('GAMESTATE UPDATE');
 			invalidate('gameState');
 		};
+
 		return () => sse.close();
 	}
 
-	async function toggleMark() {
-		const response = await axios.post(`/game/${data.room}/actions`, {
-			player: 'player_1337',
-			action: {
-				type: 'CardMark',
-				active: Math.random() < 0.5,
-				card: 'card_3'
-			} satisfies CardMarkAction
-		});
-		if (response.status < 400) {
-			snack(`Error: ${String(response.data)}`);
+	async function act(action: GameAction) {
+		const playerName = $playerNameStore;
+		if (playerName) {
+			const response = await axios.post(`/game/${data.room}/actions`, {
+				player: playerName,
+				action
+			});
+			if (response.data !== true) {
+				snack(`Error: ${String(response.data)}`);
+			}
+		} else {
+			snack(`Error: not logged in`);
 		}
 	}
 
-	async function giveClue() {
-		await axios.post(`/game/${data.room}/actions`, {
-			player: 'player_1337',
-			action: {
-				type: 'ClueGive',
-				clue: {
-					codename,
-					codenumber: Number(codenumber)
-				}
-			} satisfies ClueGiveAction
-		});
-	}
+	let snackbarError: Snackbar;
+	let snackbarText = '';
 
 	function snack(message: string) {
 		snackbarText = message;
@@ -89,9 +94,6 @@
 	}
 
 	onMount(subscribe);
-
-	let snackbarError: Snackbar;
-	let snackbarText = '';
 </script>
 
 <svelte:head>
@@ -111,31 +113,55 @@
 </div>
 <div class="drawer-container">
 	<Drawer>
-		<Content>
-			<PlayerListCard
-				operatives={objectValues(data.gameState.teams['team_0'].operatives)}
-				spymasters={objectValues(data.gameState.teams['team_0'].spymasters)}
+		<DrawerContent>
+			<TeamCard
+				teamName={teamName('team_0')}
+				points={objectValues(clientGameState.board).filter(
+					(card) => card.revealed && card.teamAssociation === 'team_0'
+				).length}
+				pointsGoal={clientGameState.ruleSet.pointsGoalByTeam['team_0']}
+				teamColor={cardColor('team_0')}
+				operatives={objectValues(clientGameState.teams['team_0'].operatives)}
+				spymasters={objectValues(clientGameState.teams['team_0'].spymasters)}
+				player={$playerNameStore ?? ''}
 			/>
-		</Content>
+
+			{#if team === 'team_0' && role === 'operative' && objectKeys(clientGameState.teams['team_0'].spymasters).length < clientGameState.ruleSet.maxSpymasterCount}
+				<Button
+					variant="outlined"
+					style={`color: ${cardColor('team_0')}`}
+					on:click={() => act({ type: 'SpymasterPromote' })}
+				>
+					<Label>Become Spymaster</Label>
+				</Button>
+			{/if}
+		</DrawerContent>
 	</Drawer>
 
 	<main>
 		<div class="grid-container">
-			{#each objectValues(data.gameState.board) as card}
+			{#each objectValues(clientGameState.board) as card}
+				{@const selfMarked = !!($playerNameStore && card.playerMarks.includes($playerNameStore))}
 				<CodeImageCard
-					disabled={card.revealed}
+					disabled={card.revealed || role === 'spymaster' || clientGameState.phase !== 'clueGiven'}
 					playerMarks={card.playerMarks}
 					imageUrl={card.imageUrl}
-					selfMarked={false}
-					markColor="#0c48c9"
-					revealedColor={cardColor(card.teamAssociation)}
-					on:toggleMark={toggleMark}
-					on:pick={() => console.log('pick')}
+					{selfMarked}
+					markColor={cardColor(clientGameState.turn ?? 'unknown')}
+					revealed={card.revealed}
+					imageColor={card.revealed ? cardColor(card.teamAssociation) : cardColor('unknown')}
+					cardColor={cardColor(card.teamAssociation)}
+					on:toggleMark={() => act({ type: 'CardMark', card: card.id, active: !selfMarked })}
+					on:pick={() => act({ type: 'CardPick', card: card.id })}
 				/>
 			{/each}
 		</div>
 
-		{#if data.gameState.phase === 'cluePending'}
+		{#if clientGameState.phase === 'clueGiven'}
+			<div class="mdc-typography--headline2" style="text-align: center;">
+				{clientGameState.currentClue?.codename + ' ' + clientGameState.currentClue?.codenumber}
+			</div>
+		{:else if clientGameState.phase === 'cluePending' && team && clientGameState.turn === team && role === 'spymaster'}
 			<div class="codename">
 				<Textfield variant="outlined" bind:value={codename} label="Codename" width="600px">
 					<TextFieldIcon class="material-icons" slot="leadingIcon">vpn_key</TextFieldIcon>
@@ -148,24 +174,122 @@
 				</Select>
 				<div class="flexy">
 					<div class="margins">
-						<Fab color="primary" on:click={() => giveClue()}>
+						<Fab
+							style={`background-color: ${cardColor(team)}`}
+							on:click={() =>
+								act({ type: 'ClueGive', clue: { codename, codenumber: Number(codenumber) } })}
+						>
 							<FabIcon class="material-icons">outgoing_mail</FabIcon>
 						</Fab>
 					</div>
 				</div>
 			</div>
-		{:else if data.gameState.phase === 'clueGiven'}
-			{data.gameState.currentClue?.codename + ' ' + data.gameState.currentClue?.codenumber}
 		{/if}
+		{#if clientGameState.phase === 'clueGiven' && team && clientGameState.turn === team && role === 'operative'}
+			<div style="text-align: center;">
+				<Button
+					variant="outlined"
+					style={`color: ${cardColor(team)}`}
+					on:click={() => act({ type: 'RoundSkip' })}
+				>
+					<Label>Skip Round</Label>
+				</Button>
+			</div>
+		{/if}
+
+		<div class="card-display">
+			<div class="card-container">
+				<Card>
+					<CardContent component={List}>
+						{#each clientGameState.history.sort((a, b) => b.timestamp - a.timestamp) as historyEntry}
+							{#if historyEntry.type === 'ClueGive'}
+								<Item>
+									<Text
+										><span
+											>{new Date(historyEntry.timestamp).toLocaleTimeString('de-DE') + ' '}</span
+										>
+										<span
+											style={`color: ${cardColor(
+												clientGameState.players[historyEntry.actor].team
+											)}`}
+											>{historyEntry.actor}
+										</span>
+										gave the clue
+										<span
+											style={`color: ${cardColor(
+												clientGameState.players[historyEntry.actor].team
+											)}`}>{`${historyEntry.clue.codename} ${historyEntry.clue.codenumber}`}</span
+										></Text
+									>
+								</Item>
+							{:else if historyEntry.type === 'CardPick'}
+								<Item>
+									<Text
+										><span
+											>{new Date(historyEntry.timestamp).toLocaleTimeString('de-DE') + ' '}</span
+										><span
+											style={`color: ${cardColor(
+												clientGameState.players[historyEntry.actor].team
+											)}`}
+											>{historyEntry.actor}
+										</span>
+										picked
+										<span
+											style={`color: ${cardColor(
+												clientGameState.board[historyEntry.card].teamAssociation
+											)}`}
+											>{historyEntry.card}
+										</span></Text
+									>
+								</Item>
+							{:else if historyEntry.type === 'RoundSkip'}
+								<Item>
+									<Text
+										><span
+											>{new Date(historyEntry.timestamp).toLocaleTimeString('de-DE') + ' '}</span
+										><span
+											style={`color: ${cardColor(
+												clientGameState.players[historyEntry.actor].team
+											)}`}
+											>{historyEntry.actor}
+										</span> skipped the round</Text
+									>
+								</Item>
+							{:else if historyEntry.type === 'GameFinished'}
+								<Item>
+									<Text>{`${historyEntry.winningTeams.join(', ')} won the game`}</Text>
+								</Item>
+							{/if}
+						{/each}
+					</CardContent>
+				</Card>
+			</div>
+		</div>
 	</main>
 
 	<Drawer>
-		<Content>
-			<PlayerListCard
-				operatives={objectValues(data.gameState.teams['team_1'].operatives)}
-				spymasters={objectValues(data.gameState.teams['team_1'].spymasters)}
+		<DrawerContent>
+			<TeamCard
+				teamName={teamName('team_1')}
+				points={objectValues(clientGameState.board).filter(
+					(card) => card.revealed && card.teamAssociation === 'team_1'
+				).length}
+				pointsGoal={clientGameState.ruleSet.pointsGoalByTeam['team_1']}
+				teamColor={cardColor('team_1')}
+				operatives={objectValues(clientGameState.teams['team_1'].operatives)}
+				spymasters={objectValues(clientGameState.teams['team_1'].spymasters)}
+				player={$playerNameStore ?? ''}
 			/>
-		</Content>
+			{#if team === 'team_1' && role === 'operative' && objectKeys(clientGameState.teams['team_1'].spymasters).length < clientGameState.ruleSet.maxSpymasterCount}
+				<Button
+					variant="outlined"
+					style={`color: ${cardColor('team_1')}`}
+					on:click={() => act({ type: 'SpymasterPromote' })}
+				>
+					<Label>Become Spymaster</Label>
+				</Button>
+			{/if}
+		</DrawerContent>
 	</Drawer>
 </div>
 
