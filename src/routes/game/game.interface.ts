@@ -122,7 +122,8 @@ export type GameAction =
 	| CardMarkAction
 	| CardPickAction
 	| ClueGiveAction
-	| RoundSkipAction;
+	| RoundSkipAction
+	| GameResetAction;
 
 export type PlayerJoinAction = {
 	type: 'PlayerJoin';
@@ -160,4 +161,8 @@ export type ClueGiveAction = {
 
 export type RoundSkipAction = {
 	type: 'RoundSkip';
+};
+
+export type GameResetAction = {
+	type: 'GameReset';
 };

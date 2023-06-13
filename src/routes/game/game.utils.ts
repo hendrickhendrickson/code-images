@@ -31,5 +31,5 @@ function teamNameByIndex(index: number): string {
 }
 
 export function teamName(team: TeamId): string {
-	return `Team ${teamNameByIndex(indexOfId(team))}`;
+	return `${teamNameByIndex(indexOfId(team))} Team`;
 }

@@ -57,6 +57,7 @@
 		"axios": "^1.4.0",
 		"decimal.js": "^10.4.3",
 		"puppeteer": "^20.3.0",
+		"svelte-confetti": "^1.2.2",
 		"uuid": "^9.0.0"
 	}
 }

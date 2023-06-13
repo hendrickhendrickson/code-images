@@ -18,6 +18,8 @@ import type {
 } from '../../game.interface';
 import { nextTeam } from '../../game.utils';
 import { validateCodename } from '../../codename/codename.validation';
+import { initGame } from '../../game.init';
+import { timeout } from '../../../../utils/timeout.utils';
 
 export async function handleAction(
 	gameState: GameState,
@@ -41,6 +43,8 @@ export async function handleAction(
 			return handleGlueGive(gameState, actor, action);
 		case 'RoundSkip':
 			return handleRoundSkip(gameState, actor);
+		case 'GameReset':
+			return handleGameReset(gameState, actor);
 		default:
 			return assertUnreachable(`unknown action type`);
 	}
@@ -265,6 +269,7 @@ export async function handleCardPick(
 	if (cardTeamAssociation === 'assassin') {
 		gameState.phase = 'finished';
 		objectValues(gameState.board).forEach((card) => (card.playerMarks = []));
+		await timeout(1);
 		gameState.history.push({
 			type: 'GameFinished',
 			winningTeams: objectKeys(gameState.teams).filter((team) => team !== gameState.turn),
@@ -282,6 +287,7 @@ export async function handleCardPick(
 		) {
 			gameState.phase = 'finished';
 			objectValues(gameState.board).forEach((card) => (card.playerMarks = []));
+			await timeout(1);
 			gameState.history.push({
 				type: 'GameFinished',
 				winningTeams: [cardTeamAssociation],
@@ -390,4 +396,22 @@ export async function handleRoundSkip(
 	gameState.history.push({ type: 'RoundSkip', actor, timestamp: Date.now() });
 
 	return { success: true, updatedGameState: gameState };
+}
+
+export async function handleGameReset(
+	gameState: GameState,
+	actor: PlayerId
+): Promise<ActionResult> {
+	// action validation
+	if (!(actor in gameState.players)) {
+		return { success: false, failReason: 'player not in the game' };
+	}
+
+	// action execution
+	const newGameState = initGame();
+	newGameState.ruleSet = gameState.ruleSet;
+	newGameState.players = gameState.players;
+	newGameState.teams = gameState.teams;
+
+	return { success: true, updatedGameState: newGameState };
 }

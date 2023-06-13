@@ -21,6 +21,9 @@
 	import { obfuscateGameState, teamName } from '../game.utils';
 	import Card, { Content as CardContent } from '@smui/card';
 	import List, { Item, Text } from '@smui/list';
+	import { browser } from '$app/environment';
+	import { assert } from '../../../utils/assert.utils';
+	import Confetti from '../../../lib/Confetti.svelte';
 
 	let codename = '';
 	let codenumber = '0';
@@ -42,6 +45,18 @@
 	})();
 
 	$: clientGameState = role === 'spymaster' ? data.gameState : obfuscateGameState(data.gameState);
+
+	$: winningTeams = (() => {
+		const gameFinishHistoryEntry = clientGameState.history.find(
+			(historyEntry) => historyEntry.type === 'GameFinished'
+		);
+		if (gameFinishHistoryEntry) {
+			assert(gameFinishHistoryEntry.type === 'GameFinished');
+			return gameFinishHistoryEntry.winningTeams;
+		} else {
+			return [];
+		}
+	})();
 
 	async function subscribe() {
 		const sse = new EventSource(`/game/${data.room}`);
@@ -84,6 +99,8 @@
 			snack(`Error: not logged in`);
 		}
 	}
+	// @ts-ignore
+	if (browser) window.act = act;
 
 	let snackbarError: Snackbar;
 	let snackbarText = '';
@@ -107,6 +124,31 @@
 		<IconButton class="material-icons" title="Dismiss">close</IconButton>
 	</Actions>
 </Snackbar>
+
+{#if clientGameState.phase === 'finished'}
+	<div
+		style="
+position: fixed;
+top: -50px;
+left: 0;
+height: 100vh;
+width: 100vw;
+display: flex;
+justify-content: center;
+overflow: hidden;
+pointer-events: none;"
+	>
+		<Confetti
+			x={[-5, 5]}
+			y={[0, 0.1]}
+			delay={[500, 2000]}
+			infinite
+			duration={4000}
+			amount={350}
+			fallDistance="100vh"
+		/>
+	</div>
+{/if}
 
 <div style="text-align: center;">
 	<LoginModal />
@@ -139,11 +181,17 @@
 	</Drawer>
 
 	<main>
-		<div class="grid-container">
+		<div
+			class="grid-container"
+			style={winningTeams.length === 1 ? `outline: ${teamColor(winningTeams[0])} solid 3px` : ''}
+		>
 			{#each objectValues(clientGameState.board) as card}
 				{@const selfMarked = !!($playerNameStore && card.playerMarks.includes($playerNameStore))}
 				<CodeImageCard
-					disabled={card.revealed || role === 'spymaster' || clientGameState.phase !== 'clueGiven'}
+					disabled={card.revealed ||
+						role === 'spymaster' ||
+						clientGameState.phase !== 'clueGiven' ||
+						clientGameState.turn !== team}
 					playerMarks={card.playerMarks}
 					imageUrl={card.imageUrl}
 					{selfMarked}
@@ -257,7 +305,15 @@
 								</Item>
 							{:else if historyEntry.type === 'GameFinished'}
 								<Item>
-									<Text>{`${historyEntry.winningTeams.join(', ')} won the game`}</Text>
+									<Text
+										><span
+											>{new Date(historyEntry.timestamp).toLocaleTimeString('de-DE') + ' '}</span
+										>
+										{#each historyEntry.winningTeams as team}
+											<span style={`color: ${cardColor(team)}`}>{teamName(team)}</span>
+										{/each}
+										won the game
+									</Text>
 								</Item>
 							{/if}
 						{/each}
@@ -307,6 +363,7 @@
 		grid-template-columns: repeat(5, 1fr);
 		grid-template-rows: repeat(5, 1fr);
 		gap: 10px; /* Optional - adds spacing between cells */
+		margin-bottom: 10px;
 	}
 
 	.codename {
