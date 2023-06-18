@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { validateHM } from './duden.validation.js';
+import { validateHM } from './hm.validation.js';
 
 export async function GET({ url }) {
 	const codename = url.searchParams.get('codename');

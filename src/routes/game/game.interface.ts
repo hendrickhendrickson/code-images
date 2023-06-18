@@ -28,7 +28,7 @@ export type CodenameValidation = {
 	};
 	DE: {
 		wikipedia: boolean;
-		duden: boolean;
+		// duden: boolean;
 		hm: boolean;
 	};
 };
