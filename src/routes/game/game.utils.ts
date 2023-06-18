@@ -1,5 +1,6 @@
 import { objectMap } from '../../utils/object.utils';
 import type { CardId, ClientGameState, GameState, TeamId } from './game.interface';
+import { faker } from '@faker-js/faker';
 
 export function indexOfId(id: TeamId | CardId): number {
 	return +id.split('_')[1];
@@ -32,4 +33,7 @@ function teamNameByIndex(index: number): string {
 
 export function teamName(team: TeamId): string {
 	return `${teamNameByIndex(indexOfId(team))} Team`;
+}
+export function generateRandomRoomId(): string {
+	return `${faker.word.adjective()}-${faker.word.adjective()}-${faker.word.noun()}`;
 }

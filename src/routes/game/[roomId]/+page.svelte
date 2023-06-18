@@ -1,11 +1,12 @@
 <script lang="ts">
 	import CodeImageCard from './image.card.svelte';
+	import HistoryCard from './history.card.svelte';
 	import LoginModal from '../login/login.modal.svelte';
 	import Textfield from '@smui/textfield';
 	import TextFieldIcon from '@smui/textfield/icon';
 	import Select, { Option } from '@smui/select';
 	import Fab, { Icon as FabIcon } from '@smui/fab';
-	import { objectEntries, objectKeys, objectValues } from '../../../utils/object.utils';
+	import { objectKeys, objectValues } from '../../../utils/object.utils';
 	import { cardColor, teamColor } from '../../../theme/colors.consts';
 	import TeamCard from './team.card.svelte';
 	import Drawer, { Content as DrawerContent } from '@smui/drawer';
@@ -19,8 +20,6 @@
 	import Button from '@smui/button';
 	import { playerNameStore } from './playerName.store';
 	import { obfuscateGameState, teamName } from '../game.utils';
-	import Card, { Content as CardContent } from '@smui/card';
-	import List, { Item, Text } from '@smui/list';
 	import { browser } from '$app/environment';
 	import { assert } from '../../../utils/assert.utils';
 	import Confetti from '../../../lib/Confetti.svelte';
@@ -44,7 +43,9 @@
 		return null;
 	})();
 
-	$: clientGameState = role === 'spymaster' ? data.gameState : obfuscateGameState(data.gameState);
+	$: clientGameState = role === 'spymaster' ? data.gameState : obfuscateGameState(data.gameState); // TODO do this on the server
+
+	$: joined = !!($playerNameStore && clientGameState.players[$playerNameStore]);
 
 	$: winningTeams = (() => {
 		const gameFinishHistoryEntry = clientGameState.history.find(
@@ -62,23 +63,23 @@
 		const sse = new EventSource(`/game/${data.room}`);
 		sse.onopen = () => {
 			const playerName = $playerNameStore;
-			if (playerName) {
+			if (!joined && playerName) {
 				act({
 					type: 'PlayerJoin',
 					name: playerName
 				});
-			} else {
-				playerNameStore.subscribe((playerName) =>
+			}
+			playerNameStore.subscribe((playerName) => {
+				if (!joined && playerName) {
 					act({
 						type: 'PlayerJoin',
 						name: `${playerName}`
-					})
-				);
-			}
+					});
+				}
+			});
 		};
 		sse.onerror = (err) => log(err);
 		sse.onmessage = () => {
-			log('GAMESTATE UPDATE');
 			invalidate('gameState');
 		};
 
@@ -154,31 +155,37 @@ pointer-events: none;"
 	<LoginModal />
 </div>
 <div class="drawer-container">
-	<Drawer>
-		<DrawerContent>
-			<TeamCard
-				teamName={teamName('team_0')}
-				points={objectValues(clientGameState.board).filter(
-					(card) => card.revealed && card.teamAssociation === 'team_0'
-				).length}
-				pointsGoal={clientGameState.ruleSet.pointsGoalByTeam['team_0']}
-				teamColor={cardColor('team_0')}
-				operatives={objectValues(clientGameState.teams['team_0'].operatives)}
-				spymasters={objectValues(clientGameState.teams['team_0'].spymasters)}
-				player={$playerNameStore ?? ''}
-			/>
+	<div style="display: flex; flex-direction: column; gap: 10px">
+		<TeamCard
+			teamName={teamName('team_0')}
+			points={objectValues(clientGameState.board).filter(
+				(card) => card.revealed && card.teamAssociation === 'team_0'
+			).length}
+			pointsGoal={clientGameState.ruleSet.pointsGoalByTeam['team_0']}
+			teamColor={cardColor('team_0')}
+			operatives={objectValues(clientGameState.teams['team_0'].operatives)}
+			spymasters={objectValues(clientGameState.teams['team_0'].spymasters)}
+			player={$playerNameStore ?? ''}
+		/>
 
-			{#if team === 'team_0' && role === 'operative' && objectKeys(clientGameState.teams['team_0'].spymasters).length < clientGameState.ruleSet.maxSpymasterCount}
-				<Button
-					variant="outlined"
-					style={`color: ${cardColor('team_0')}`}
-					on:click={() => act({ type: 'SpymasterPromote' })}
-				>
-					<Label>Become Spymaster</Label>
-				</Button>
-			{/if}
-		</DrawerContent>
-	</Drawer>
+		{#if team === 'team_0' && role === 'operative' && objectKeys(clientGameState.teams['team_0'].spymasters).length < clientGameState.ruleSet.maxSpymasterCount}
+			<Button
+				variant="outlined"
+				style={`color: ${cardColor('team_0')}`}
+				on:click={() => act({ type: 'SpymasterPromote' })}
+			>
+				<Label>Become Spymaster</Label>
+			</Button>
+		{/if}
+		<HistoryCard
+			clientGameState={{
+				...clientGameState,
+				history: clientGameState.history.filter(
+					(entry) => 'actor' in entry && clientGameState.players[entry.actor]?.team === 'team_0'
+				)
+			}}
+		/>
+	</div>
 
 	<main>
 		<div
@@ -245,108 +252,40 @@ pointer-events: none;"
 			</div>
 		{/if}
 
-		<div class="card-display">
-			<div class="card-container">
-				<Card>
-					<CardContent component={List}>
-						{#each clientGameState.history.sort((a, b) => b.timestamp - a.timestamp) as historyEntry}
-							{#if historyEntry.type === 'ClueGive'}
-								<Item>
-									<Text
-										><span
-											>{new Date(historyEntry.timestamp).toLocaleTimeString('de-DE') + ' '}</span
-										>
-										<span
-											style={`color: ${cardColor(
-												clientGameState.players[historyEntry.actor].team
-											)}`}
-											>{historyEntry.actor}
-										</span>
-										gave the clue
-										<span
-											style={`color: ${cardColor(
-												clientGameState.players[historyEntry.actor].team
-											)}`}>{`${historyEntry.clue.codename} ${historyEntry.clue.codenumber}`}</span
-										></Text
-									>
-								</Item>
-							{:else if historyEntry.type === 'CardPick'}
-								<Item>
-									<Text
-										><span
-											>{new Date(historyEntry.timestamp).toLocaleTimeString('de-DE') + ' '}</span
-										><span
-											style={`color: ${cardColor(
-												clientGameState.players[historyEntry.actor].team
-											)}`}
-											>{historyEntry.actor}
-										</span>
-										picked
-										<span
-											style={`color: ${cardColor(
-												clientGameState.board[historyEntry.card].teamAssociation
-											)}`}
-											>{historyEntry.card}
-										</span></Text
-									>
-								</Item>
-							{:else if historyEntry.type === 'RoundSkip'}
-								<Item>
-									<Text
-										><span
-											>{new Date(historyEntry.timestamp).toLocaleTimeString('de-DE') + ' '}</span
-										><span
-											style={`color: ${cardColor(
-												clientGameState.players[historyEntry.actor].team
-											)}`}
-											>{historyEntry.actor}
-										</span> skipped the round</Text
-									>
-								</Item>
-							{:else if historyEntry.type === 'GameFinished'}
-								<Item>
-									<Text
-										><span
-											>{new Date(historyEntry.timestamp).toLocaleTimeString('de-DE') + ' '}</span
-										>
-										{#each historyEntry.winningTeams as team}
-											<span style={`color: ${cardColor(team)}`}>{teamName(team)}</span>
-										{/each}
-										won the game
-									</Text>
-								</Item>
-							{/if}
-						{/each}
-					</CardContent>
-				</Card>
-			</div>
-		</div>
+		<HistoryCard {clientGameState} showTimestamp={true} />
 	</main>
 
-	<Drawer>
-		<DrawerContent>
-			<TeamCard
-				teamName={teamName('team_1')}
-				points={objectValues(clientGameState.board).filter(
-					(card) => card.revealed && card.teamAssociation === 'team_1'
-				).length}
-				pointsGoal={clientGameState.ruleSet.pointsGoalByTeam['team_1']}
-				teamColor={cardColor('team_1')}
-				operatives={objectValues(clientGameState.teams['team_1'].operatives)}
-				spymasters={objectValues(clientGameState.teams['team_1'].spymasters)}
-				player={$playerNameStore ?? ''}
-			/>
-			{#if team === 'team_1' && role === 'operative' && objectKeys(clientGameState.teams['team_1'].spymasters).length < clientGameState.ruleSet.maxSpymasterCount}
-				<Button
-					variant="outlined"
-					style={`color: ${cardColor('team_1')}`}
-					on:click={() => act({ type: 'SpymasterPromote' })}
-				>
-					<Label>Become Spymaster</Label>
-				</Button>
-			{/if}
-		</DrawerContent>
-	</Drawer>
+	<div style="display: flex; flex-direction: column; gap: 10px">
+		<TeamCard
+			teamName={teamName('team_1')}
+			points={objectValues(clientGameState.board).filter(
+				(card) => card.revealed && card.teamAssociation === 'team_1'
+			).length}
+			pointsGoal={clientGameState.ruleSet.pointsGoalByTeam['team_1']}
+			teamColor={cardColor('team_1')}
+			operatives={objectValues(clientGameState.teams['team_1'].operatives)}
+			spymasters={objectValues(clientGameState.teams['team_1'].spymasters)}
+			player={$playerNameStore ?? ''}
+		/>
+		{#if team === 'team_1' && role === 'operative' && objectKeys(clientGameState.teams['team_1'].spymasters).length < clientGameState.ruleSet.maxSpymasterCount}
+			<Button
+				variant="outlined"
+				style={`color: ${cardColor('team_1')}`}
+				on:click={() => act({ type: 'SpymasterPromote' })}
+			>
+				<Label>Become Spymaster</Label>
+			</Button>
+		{/if}
+
+		<HistoryCard
+			clientGameState={{
+				...clientGameState,
+				history: clientGameState.history.filter(
+					(entry) => 'actor' in entry && clientGameState.players[entry.actor]?.team === 'team_1'
+				)
+			}}
+		/>
+	</div>
 </div>
 
 <style>

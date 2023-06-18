@@ -1,27 +1,24 @@
-import { type RoomId, subscribeRoom, getGameState, unsubscribeRoom } from './room.cache.js';
-import { v4 as uuidV4 } from 'uuid';
+import { createClient } from 'redis';
+
 export async function GET(requestEvent) {
-	requestEvent.request.headers;
+	const client = createClient({
+		url: import.meta.env.VITE_KV_URL.replace('redis:', 'rediss:')
+	});
 
-	let data;
-	try {
-		data = await requestEvent.request.json();
-	} catch (error) {
-		/* empty */
-	}
+	client.on('error', (err) => console.log('Redis Client Error', err));
 
-	const subscriberId = data?.player ?? uuidV4();
+	await client.connect();
 
 	const stream = new ReadableStream({
-		start(controller) {
-			controller.enqueue(JSON.stringify(getGameState(requestEvent.params.roomId as RoomId)));
+		async start(controller) {
+			controller.enqueue('event: message\ndata:\n\n'); // TODO check necessary
 
-			subscribeRoom(requestEvent.params.roomId as RoomId, subscriberId, () => {
+			await client.subscribe(`room_${requestEvent.params.roomId}`, () => {
 				controller.enqueue('event: message\ndata:\n\n');
 			});
 		},
-		cancel() {
-			unsubscribeRoom(requestEvent.params.roomId as RoomId, subscriberId);
+		async cancel() {
+			await client.unsubscribe();
 		}
 	});
 	const response = new Response(stream, {

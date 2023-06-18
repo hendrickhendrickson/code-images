@@ -37,8 +37,8 @@
 	<Button variant="outlined" on:click={() => (open = true)}>
 		<Label>Login</Label>
 	</Button>
-{:else}
-	<!-- <Button
+	<!-- {:else}
+	<Button
 		variant="outlined"
 		on:click={() => {
 			localStorage.removeItem('playerName');

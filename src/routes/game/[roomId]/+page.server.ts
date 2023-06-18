@@ -1,15 +1,16 @@
 import { error } from '@sveltejs/kit';
-import type { RoomId } from './room.cache';
-import { roomCache } from './room.cache';
+import { dbReadWrite } from './room.db';
+import type { GameState } from '../game.interface';
 
 export async function load({ params, depends }) {
-	// const gameState = await getGameState(params.roomId);
-
 	depends('gameState');
-	if (params.roomId in roomCache && roomCache[params.roomId as RoomId]) {
+
+	const gameState = await dbReadWrite.get<GameState>(`room_${params.roomId}`);
+
+	if (gameState) {
 		return {
 			room: params.roomId,
-			gameState: roomCache[params.roomId as RoomId].state
+			gameState
 		};
 	}
 

@@ -18,7 +18,7 @@ export function initGame(ruleSet?: RuleSet): GameState {
 		board: initBoard(ruleSet),
 		turn: `team_0`,
 		currentClue: null,
-		history: [{ type: 'GameInit', timestamp: Date.now() }]
+		history: [] // [{ type: 'GameInit', timestamp: Date.now() }]
 	};
 }
 
