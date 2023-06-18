@@ -2,7 +2,7 @@ import { createClient } from 'redis';
 
 export async function GET(requestEvent) {
 	const client = createClient({
-		url: import.meta.env.VITE_KV_URL.replace('redis:', 'rediss:')
+		url: (import.meta.env.VITE_KV_URL ?? process.env.KV_URL).replace('redis:', 'rediss:')
 	});
 
 	client.on('error', (err) => console.log('Redis Client Error', err));
