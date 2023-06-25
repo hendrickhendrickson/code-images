@@ -35,6 +35,7 @@
 </script>
 
 <div class="game-start-screen">
+
     <div class="game-name-and-menu-wrapper">
         <div class="game-name">
             <h1>Code Images</h1>
@@ -107,46 +108,19 @@
 <style>
     .game-start-screen {
         box-sizing: border-box;
+        display: grid;
+        grid-template-columns: 50% 50%;
+        gap: 2rem;
         height: 100%;
-        width: 80%;
         margin: 0 auto;
-        display: flex;
-    }
-
-    .game-name-and-menu-wrapper,
-    .game-logo-wrapper {
-        flex: 1;
-    }
-
-    .game-logo-wrapper {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex: 1;
-    }
-
-    .game-logo-wrapper .logo-placeholder {
-        box-sizing: border-box;
-        padding: 2rem;
-        text-transform: uppercase;
-        aspect-ratio: 1/1;
-        border: 1px solid var(--white-hex);
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        width: 80%;
     }
 
     .game-name-and-menu-wrapper {
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
         gap: 1rem;
-    }
-
-    .game-name {
-        flex: 1;
-        display: flex;
-        align-items: flex-end;
+        justify-content: center;
     }
 
     .game-name h1 {
@@ -154,17 +128,7 @@
         text-transform: uppercase;
     }
 
-    .player-name-form {
-        flex: 1;
-        height: 10%;
-        min-height: fit-content;
-        display: flex;
-        align-items: flex-start;
-        gap: 1rem;
-    }
-
     ul.game-menu {
-        flex: 1;
         margin: 0;
         padding: 0;
         list-style-type: none;
@@ -190,5 +154,57 @@
         display: flex;
         flex-wrap: wrap;
         gap: 1rem;
+    }
+
+    .game-logo-wrapper {
+        display: flex;
+        align-items: center;
+    }
+
+    .game-logo-wrapper .logo-placeholder {
+        box-sizing: border-box;
+        padding: 2rem;
+        text-transform: uppercase;
+        aspect-ratio: 1/1;
+        border: 1px solid var(--white-hex);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        max-height: 100%;
+    }
+
+    @media only screen and (max-width: 800px) {
+        .game-start-screen {
+            grid-template-columns: 100%;
+            grid-template-rows: 30% max-content;
+            min-width: fit-content;
+            gap: 4rem;
+            padding-top: 4rem;
+        }
+
+        .game-logo-wrapper {
+            grid-row: 1/2;
+            display: block;
+
+        }
+
+        .game-logo-wrapper .logo-placeholder {
+            margin: 0 auto;
+        }
+
+        .game-name-and-menu-wrapper {
+            grid-row: 2/3;
+            justify-content: flex-start;
+        }
+
+        .game-name h1 {
+            margin: 0 0 2rem 0;
+        }
+    }
+
+    @media only screen and (max-width: 420px) {
+        .game-start-screen {
+            margin: 0 2rem;
+        }
     }
 </style>
