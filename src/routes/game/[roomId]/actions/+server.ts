@@ -2,6 +2,7 @@ import { handleAction } from './game.actions.js';
 import { isDefined } from '../../../../utils/assert.utils.js';
 import { dbGet, dbSet, dbPublish } from '../room.db.js';
 
+/** @type {import('./$types').RequestHandler} */
 export async function POST(requestEvent) {
 	requestEvent.request.headers;
 

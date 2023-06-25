@@ -2,6 +2,7 @@ import { error } from '@sveltejs/kit';
 import { dbGet } from './room.db';
 import type { GameState } from '../game.interface';
 
+/** @type {import('./$types').PageServerLoad} */
 export async function load({ params, depends }) {
 	depends('gameState');
 

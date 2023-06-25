@@ -3,6 +3,7 @@ import { initGame } from '../game.init.js';
 import { isDefined } from '../../../utils/assert.utils.js';
 import { dbPublish, dbSet } from '../[roomId]/room.db';
 
+/** @type {import('./$types').RequestHandler} */
 export async function POST() {
 	const room = generateRandomRoomId();
 	const gameState = initGame();

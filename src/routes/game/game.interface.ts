@@ -22,17 +22,6 @@ export type RuleSet = {
 
 export type CodenameValidationLocal = 'EN' | 'DE';
 
-export type CodenameValidation = {
-	EN: {
-		wikipedia: boolean;
-	};
-	DE: {
-		wikipedia: boolean;
-		// duden: boolean;
-		hm: boolean;
-	};
-};
-
 export type PlayerId = string; //`player_${string}`;
 
 export type Player = {

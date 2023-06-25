@@ -349,12 +349,7 @@ export async function handleGlueGive(
 		action.clue.codename,
 		gameState.ruleSet.codenameValidation
 	);
-	if (
-		!(
-			codenameValidation === true ||
-			objectValues(codenameValidation).some((validation) => validation === true)
-		)
-	) {
+	if (codenameValidation === false) {
 		return { success: false, failReason: 'codename not allowed' };
 	}
 

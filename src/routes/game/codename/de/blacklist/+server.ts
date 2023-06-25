@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { validateWikipedia } from '../../wikipedia.validation.js';
+import { validateBlacklist } from './blacklist.validation.js';
 
 /** @type {import('./$types').RequestHandler} */
 export async function GET({ url }) {
@@ -8,5 +8,5 @@ export async function GET({ url }) {
 		throw error(400, 'request must contain codename');
 	}
 
-	return new Response(String(await validateWikipedia(codename, 'DE')));
+	return new Response(String(await validateBlacklist(codename)));
 }

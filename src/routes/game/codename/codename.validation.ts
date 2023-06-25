@@ -1,12 +1,12 @@
 import { assertUnreachable } from '../../../utils/assert.utils';
-import type { CodenameValidationLocal, CodenameValidation, RuleSet } from '../game.interface';
+import type { RuleSet } from '../game.interface';
 import { validateCodenameDE } from './de/codename.validation.de';
 import { validateCodenameEN } from './en/codename.validation.en';
 
 export async function validateCodename(
 	codename: string,
 	codenameValidation: RuleSet['codenameValidation']
-): Promise<boolean | CodenameValidation[CodenameValidationLocal]> {
+): Promise<boolean> {
 	if (!codenameValidation) {
 		return true;
 	} else if (codenameValidation === 'EN') {

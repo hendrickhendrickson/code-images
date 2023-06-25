@@ -1,9 +1,10 @@
 import { dbSubscribe, dbUnsubscribe } from './room.db';
 
+/** @type {import('./$types').RequestHandler} */
 export async function GET(requestEvent) {
 	const stream = new ReadableStream({
 		async start(controller) {
-			controller.enqueue('event: message\ndata:\n\n'); // TODO check necessary
+			controller.enqueue('event: message\ndata:\n\n'); // TODO check if necessary
 
 			await dbSubscribe(`room_${requestEvent.params.roomId}`, () => {
 				controller.enqueue('event: message\ndata:\n\n');
