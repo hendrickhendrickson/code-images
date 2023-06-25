@@ -1,5 +1,9 @@
 <script lang="ts">
+    import { enhance } from "$app/forms";
+    import { page } from "$app/stores";
     import { onMount } from "svelte";
+
+    export let form;
 
     let playerName = "";
     let isChangingPlayerName = false;
@@ -31,12 +35,8 @@
 </script>
 
 <div class="game-start-screen">
-    <div class="header">
-        <div class="game-name">
-            <h1>Code-Images</h1>
-        </div>
-
-        <div class="logo">LOGO</div>
+    <div class="game-name">
+        <h1>Code Images</h1>
     </div>
 
     {#if isMounted}
@@ -50,7 +50,7 @@
                     value={playerName}
                 />
 
-                <button>Enter</button>
+                <button>Submit</button>
             </form>
         {:else}
             <ul class="game-menu">
@@ -65,8 +65,30 @@
                         Change Player Name
                     </button>
                 </li>
+
                 <li>
-                    <button type="button">Create Room</button>
+                    <form class="room-url-form" method="POST" use:enhance>
+                        {#if form?.roomId}
+                            <div class="input-like">
+                                {$page.url.protocol}//{$page.url.host}/game/{form?.roomId}
+                            </div>
+
+                            <div style="display: flex; gap: 1rem;">
+                                <a
+                                    href={`${$page.url.protocol}//${$page.url.host}/game/${form?.roomId}`}
+                                    class="button"
+                                    role="button"
+                                    target="_self"
+                                >
+                                    Join room
+                                </a>
+
+                                <button>Create new room</button>
+                            </div>
+                        {:else}
+                            <button>Create room</button>
+                        {/if}
+                    </form>
                 </li>
             </ul>
         {/if}
@@ -77,36 +99,26 @@
     .game-start-screen {
         box-sizing: border-box;
         height: 100%;
-        padding: 0 10rem;
+        width: 80%;
+        margin: 0 auto;
     }
 
-    .header {
-        display: flex;
-        height: 50%;
-    }
-
-    .header .game-name {
-        flex: 1;
+    .game-name {
+        height: 55%;
         display: flex;
         align-items: center;
     }
 
-    .header .game-name h1 {
+    .game-name h1 {
         margin: 0;
-    }
-
-    .header .logo {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        text-transform: uppercase;
     }
 
     .player-name-form {
         height: 10%;
         min-height: fit-content;
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         gap: 1rem;
     }
 
@@ -116,7 +128,7 @@
         list-style-type: none;
         display: flex;
         flex-direction: column;
-        gap: 2rem;
+        gap: 1rem;
     }
 
     ul.game-menu .change-player-name-option {
@@ -129,5 +141,12 @@
         border-radius: 0.4rem;
         padding: 0.1rem 0.4rem;
         font-size: 0.8rem;
+        min-height: unset;
+    }
+
+    ul.game-menu .room-url-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
     }
 </style>

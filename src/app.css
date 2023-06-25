@@ -1,6 +1,8 @@
 :root {
-    --color-black: #1a1a1a;
-    --color-white: #ccc;
+    --black-hex: #1a1a1a;
+    --black-rgb: 26, 26, 26;
+    --white-hex: #ccc;
+    --white-rgb: 204, 204, 204;
 }
 
 html, body {
@@ -9,7 +11,7 @@ html, body {
     padding: 0;
     font-size: 78.125%;
     font-family: 'Roboto', sans-serif;
-    background-color: var(--color-black);
+    background-color: var(--black-hex);
 }
 
 body {
@@ -18,15 +20,16 @@ body {
 
 button,
 .button {
-    unset: all;
+    all: unset;
     box-sizing: border-box;
     border: 1px solid transparent;
     border-radius: 0.5rem;
-    background-color: var(--color-white);
+    background-color: var(--white-hex);
     padding: 0.5rem 1rem;
     text-decoration: none;
     font-size: 1.2rem;
-    color: var(--color-black);
+    color: var(--black-hex);
+    display: inline-block;
 }
 
 button:hover,
@@ -36,18 +39,36 @@ button:hover,
 
 button.inverted,
 .button.inverted {
-    border-color: var(--color-white);
-    background-color: var(--color-black);
-    color: var(--color-white);
+    border-color: var(--white-hex);
+    background-color: var(--black-hex);
+    color: var(--white-hex);
 }
 
-input {
-    unset: all;
-    box-sizingg: border-box;
+input,
+.input-like {
+    all: unset;
+    box-sizing: border-box;
     border: 1px solid transparent;
+    border-bottom-color: var(--white-hex);
     border-radius: 0.5rem;
-    background-color: var(--color-white);
+    background-color: rgba(var(--white-rgb), 0.1);
     padding: 0.5rem 1rem;
     font-size: 1.2rem;
-    color: var(--color-black);
+    color: var(--white-hex);
+    transition: background-color 0.2s ease-in-out;
+}
+
+input::placeholder {
+    color: var(--white-hex);
+}
+
+input:disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+input:hover,
+input:focus,
+input:focus-within {
+    background-color: rgba(var(--white-rgb), 0.2);
 }
