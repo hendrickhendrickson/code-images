@@ -6,12 +6,12 @@
 }
 
 html, body {
+    background-color: var(--black-hex);
     height: 100%;
     margin: 0;
     padding: 0;
     font-size: 78.125%;
     font-family: 'Roboto', sans-serif;
-    background-color: var(--black-hex);
 }
 
 body {
@@ -30,11 +30,10 @@ button,
     font-size: 1.2rem;
     color: var(--black-hex);
     display: inline-block;
-}
-
-button:hover,
-.button:hover {
-    cursor: pointer;
+    transition:
+        background-color 0.2s ease-in-out,
+        color 0.2s ease-in-out,
+        border-color 0.2s ease-in-out;
 }
 
 button.inverted,
@@ -42,6 +41,12 @@ button.inverted,
     border-color: var(--white-hex);
     background-color: var(--black-hex);
     color: var(--white-hex);
+}
+
+button:hover,
+.button:hover {
+    background-color: rgba(var(--white-rgb), 0.5);
+    cursor: pointer;
 }
 
 input,
@@ -69,6 +74,7 @@ input:disabled {
 
 input:hover,
 input:focus,
-input:focus-within {
+input:focus-within,
+.input-like:hover {
     background-color: rgba(var(--white-rgb), 0.2);
 }

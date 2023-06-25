@@ -35,64 +35,73 @@
 </script>
 
 <div class="game-start-screen">
-    <div class="game-name">
-        <h1>Code Images</h1>
+    <div class="game-name-and-menu-wrapper">
+        <div class="game-name">
+            <h1>Code Images</h1>
+        </div>
+
+        {#if isMounted}
+            {#if isChangingPlayerName || !playerName}
+                <form class="player-name-form" on:submit|preventDefault={handlePlayerNameSubmit}>
+                    <input
+                        type="text"
+                        id="player-name-input"
+                        name="player-name-input"
+                        placeholder="Enter Player Name"
+                        value={playerName}
+                    />
+
+                    <button>Submit</button>
+                </form>
+            {:else}
+                <ul class="game-menu">
+                    <li class="change-player-name-option">
+                        {playerName}
+
+                        <button
+                            type="button"
+                            class="inverted"
+                            on:click={() => isChangingPlayerName = true}
+                        >
+                            Change Player Name
+                        </button>
+                    </li>
+
+                    <li>
+                        <form class="room-url-form" method="POST" use:enhance>
+                            {#if form?.roomId}
+                                <div class="input-like">
+                                    {$page.url.protocol}//{$page.url.host}/game/{form?.roomId}
+                                </div>
+
+                                <div style="display: flex; gap: 1rem;">
+                                    <a
+                                        href={`${$page.url.protocol}//${$page.url.host}/game/${form?.roomId}`}
+                                        class="button"
+                                        role="button"
+                                        target="_self"
+                                    >
+                                        Join room
+                                    </a>
+
+                                    <button>Create new room</button>
+                                </div>
+                            {:else}
+                                <button>Create room</button>
+                            {/if}
+                        </form>
+                    </li>
+                </ul>
+            {/if}
+        {/if}
     </div>
 
-    {#if isMounted}
-        {#if isChangingPlayerName || !playerName}
-            <form class="player-name-form" on:submit|preventDefault={handlePlayerNameSubmit}>
-                <input
-                    type="text"
-                    id="player-name-input"
-                    name="player-name-input"
-                    placeholder="Enter Player Name"
-                    value={playerName}
-                />
-
-                <button>Submit</button>
-            </form>
-        {:else}
-            <ul class="game-menu">
-                <li class="change-player-name-option">
-                    {playerName}
-
-                    <button
-                        type="button"
-                        class="inverted"
-                        on:click={() => isChangingPlayerName = true}
-                    >
-                        Change Player Name
-                    </button>
-                </li>
-
-                <li>
-                    <form class="room-url-form" method="POST" use:enhance>
-                        {#if form?.roomId}
-                            <div class="input-like">
-                                {$page.url.protocol}//{$page.url.host}/game/{form?.roomId}
-                            </div>
-
-                            <div style="display: flex; gap: 1rem;">
-                                <a
-                                    href={`${$page.url.protocol}//${$page.url.host}/game/${form?.roomId}`}
-                                    class="button"
-                                    role="button"
-                                    target="_self"
-                                >
-                                    Join room
-                                </a>
-
-                                <button>Create new room</button>
-                            </div>
-                        {:else}
-                            <button>Create room</button>
-                        {/if}
-                    </form>
-                </li>
-            </ul>
-        {/if}
-    {/if}
+    <div class="game-logo-wrapper">
+        <div class="logo-placeholder">
+            Hier könnte ihr Logo stehen!<br />
+            Just sayin'...
+        </div>
+    </div>
 </div>
 
 <style>
@@ -101,20 +110,52 @@
         height: 100%;
         width: 80%;
         margin: 0 auto;
+        display: flex;
+    }
+
+    .game-name-and-menu-wrapper,
+    .game-logo-wrapper {
+        flex: 1;
+    }
+
+    .game-logo-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 1;
+    }
+
+    .game-logo-wrapper .logo-placeholder {
+        box-sizing: border-box;
+        padding: 2rem;
+        text-transform: uppercase;
+        aspect-ratio: 1/1;
+        border: 1px solid var(--white-hex);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .game-name-and-menu-wrapper {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 1rem;
     }
 
     .game-name {
-        height: 55%;
+        flex: 1;
         display: flex;
-        align-items: center;
+        align-items: flex-end;
     }
 
     .game-name h1 {
-        margin: 0;
+        margin: 0 0 4rem 0;
         text-transform: uppercase;
     }
 
     .player-name-form {
+        flex: 1;
         height: 10%;
         min-height: fit-content;
         display: flex;
@@ -123,6 +164,7 @@
     }
 
     ul.game-menu {
+        flex: 1;
         margin: 0;
         padding: 0;
         list-style-type: none;
