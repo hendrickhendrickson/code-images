@@ -35,7 +35,6 @@
 </script>
 
 <div class="game-start-screen">
-
     <div class="game-name-and-menu-wrapper">
         <div class="game-name">
             <h1>Code Images</h1>
@@ -71,9 +70,15 @@
                     <li>
                         <form class="room-url-form" method="POST" use:enhance>
                             {#if form?.roomId}
-                                <div class="input-like">
+                                <button
+                                    type="button"
+                                    class="input-like room-url"
+                                    on:click={() => {
+                                        navigator.clipboard.writeText(`${$page.url.protocol}//${$page.url.host}/game/${form?.roomId}`);
+                                    }}
+                                >
                                     {$page.url.protocol}//{$page.url.host}/game/{form?.roomId}
-                                </div>
+                                </button>
 
                                 <div style="display: flex; gap: 1rem;">
                                     <a
@@ -116,6 +121,12 @@
         width: 80%;
     }
 
+    .player-name-form {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
     .game-name-and-menu-wrapper {
         display: flex;
         flex-direction: column;
@@ -150,10 +161,14 @@
         min-height: unset;
     }
 
-    ul.game-menu .room-url-form {
+    .room-url-form {
         display: flex;
         flex-wrap: wrap;
         gap: 1rem;
+    }
+
+    .room-url-form .room-url {
+        cursor: pointer;
     }
 
     .game-logo-wrapper {
@@ -195,16 +210,11 @@
         .game-name-and-menu-wrapper {
             grid-row: 2/3;
             justify-content: flex-start;
+            margin: 0 2rem;
         }
 
         .game-name h1 {
             margin: 0 0 2rem 0;
-        }
-    }
-
-    @media only screen and (max-width: 420px) {
-        .game-start-screen {
-            margin: 0 2rem;
         }
     }
 </style>
