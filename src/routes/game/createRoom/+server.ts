@@ -1,15 +1,15 @@
 import { generateRandomRoomId } from '../game.utils';
 import { initGame } from '../game.init.js';
-import { dbReadWrite } from '../[roomId]/room.db.js';
 import { isDefined } from '../../../utils/assert.utils.js';
+import { dbPublish, dbSet } from '../[roomId]/room.db';
 
 export async function POST() {
 	const room = generateRandomRoomId();
 	const gameState = initGame();
 
-	const dbWriteResult = await dbReadWrite.set(`room_${room}`, gameState);
-	const dbPublishResult = await dbReadWrite.publish(`room_${room}`, gameState);
-	if (!isDefined(dbWriteResult) || !isDefined(dbPublishResult)) {
+	const dbSetResult = await dbSet(`room_${room}`, JSON.stringify(gameState));
+	const dbPublishResult = await dbPublish(`room_${room}`, JSON.stringify(gameState));
+	if (!isDefined(dbSetResult) || !isDefined(dbPublishResult)) {
 		return new Response('could not write or publish to database');
 	}
 

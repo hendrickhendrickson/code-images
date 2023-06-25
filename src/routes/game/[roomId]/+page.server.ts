@@ -1,16 +1,15 @@
 import { error } from '@sveltejs/kit';
-import { dbReadWrite } from './room.db';
-import type { GameState } from '../game.interface';
+import { dbGet } from './room.db';
 
 export async function load({ params, depends }) {
 	depends('gameState');
 
-	const gameState = await dbReadWrite.get<GameState>(`room_${params.roomId}`);
+	const gameState = await dbGet(`room_${params.roomId}`);
 
 	if (gameState) {
 		return {
 			room: params.roomId,
-			gameState
+			gameState: JSON.parse(gameState)
 		};
 	}
 

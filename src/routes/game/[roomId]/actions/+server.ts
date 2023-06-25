@@ -1,7 +1,6 @@
-import type { GameState } from '../../game.interface.js';
 import { handleAction } from './game.actions.js';
-import { dbReadWrite } from '../room.db.js';
 import { isDefined } from '../../../../utils/assert.utils.js';
+import { dbGet, dbSet, dbPublish } from '../room.db.js';
 
 export async function POST(requestEvent) {
 	requestEvent.request.headers;
@@ -9,17 +8,17 @@ export async function POST(requestEvent) {
 	const data = await requestEvent.request.json();
 
 	let actionSuccess: true | string = true;
-	const gameState = await dbReadWrite.get<GameState>(`room_${requestEvent.params.roomId}`);
+	const gameState = await dbGet(`room_${requestEvent.params.roomId}`);
 	if (gameState) {
-		const actionResult = await handleAction(gameState, data.player, data.action);
+		const actionResult = await handleAction(JSON.parse(gameState), data.player, data.action);
 		if (actionResult.success) {
-			const dbWriteResult = await dbReadWrite.set(
+			const dbWriteResult = await dbSet(
 				`room_${requestEvent.params.roomId}`,
-				actionResult.updatedGameState
+				JSON.stringify(actionResult.updatedGameState)
 			);
-			const dbPublishResult = await dbReadWrite.publish(
+			const dbPublishResult = await dbPublish(
 				`room_${requestEvent.params.roomId}`,
-				actionResult.updatedGameState
+				JSON.stringify(actionResult.updatedGameState)
 			);
 			if (!isDefined(dbWriteResult) || !isDefined(dbPublishResult)) {
 				actionSuccess = 'could not write or publish to database';

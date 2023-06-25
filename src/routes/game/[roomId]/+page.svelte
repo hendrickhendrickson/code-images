@@ -43,7 +43,8 @@
 		return null;
 	})();
 
-	$: clientGameState = role === 'spymaster' ? data.gameState : obfuscateGameState(data.gameState); // TODO do this on the server
+	$: clientGameState =
+		role === 'spymaster' || !data.gameState ? data.gameState : obfuscateGameState(data.gameState); // TODO do this on the server
 
 	$: joined = !!($playerNameStore && clientGameState.players[$playerNameStore]);
 
