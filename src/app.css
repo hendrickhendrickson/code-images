@@ -1,0 +1,53 @@
+:root {
+    --color-black: #1a1a1a;
+    --color-white: #ccc;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-size: 78.125%;
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--color-black);
+}
+
+body {
+    font-size: 1.6rem;
+}
+
+button,
+.button {
+    unset: all;
+    box-sizing: border-box;
+    border: 1px solid transparent;
+    border-radius: 0.5rem;
+    background-color: var(--color-white);
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    font-size: 1.2rem;
+    color: var(--color-black);
+}
+
+button:hover,
+.button:hover {
+    cursor: pointer;
+}
+
+button.inverted,
+.button.inverted {
+    border-color: var(--color-white);
+    background-color: var(--color-black);
+    color: var(--color-white);
+}
+
+input {
+    unset: all;
+    box-sizingg: border-box;
+    border: 1px solid transparent;
+    border-radius: 0.5rem;
+    background-color: var(--color-white);
+    padding: 0.5rem 1rem;
+    font-size: 1.2rem;
+    color: var(--color-black);
+}
