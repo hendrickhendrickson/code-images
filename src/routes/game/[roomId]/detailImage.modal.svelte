@@ -14,11 +14,12 @@
 	bind:open
 	aria-labelledby="default-focus-title"
 	aria-describedby="default-focus-content"
+	surface$style="max-width: none"
 	on:click={() => dispatch('close')}
 >
 	<img
 		src={imageUrl}
 		alt="img"
-		style={`width: ${detailImagePixelSize}px;height: ${detailImagePixelSize}px;overflow-y: visible`}
+		style={`width: ${detailImagePixelSize}px;height: ${detailImagePixelSize}px;`}
 	/>
 </Dialog>
