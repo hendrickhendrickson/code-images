@@ -1,14 +1,11 @@
 import { objectMap } from '../../utils/object.utils';
 import type { CardId, ClientGameState, GameState, TeamId } from './game.interface';
 import { faker } from '@faker-js/faker';
+import { detailImagePixelSize } from './game.consts';
 
 export function indexOfId(id: TeamId | CardId): number {
 	return +id.split('_')[1];
 }
-
-// export function typeOfId(id: TeamId | CardId): 'player' | 'team' | 'card' {
-// 	return id.split('_')[0] as 'player' | 'team' | 'card';
-// }
 
 export function nextTeam(team: TeamId, teamCount: number): TeamId {
 	const teamIndex = indexOfId(team);
@@ -34,6 +31,11 @@ function teamNameByIndex(index: number): string {
 export function teamName(team: TeamId): string {
 	return `${teamNameByIndex(indexOfId(team))} Team`;
 }
+
 export function generateRandomRoomId(): string {
 	return `${faker.word.adjective()}-${faker.word.adjective()}-${faker.word.noun()}`;
+}
+
+export function generateImageUrl(): string {
+	return faker.image.urlPicsumPhotos({ width: detailImagePixelSize, height: detailImagePixelSize });
 }

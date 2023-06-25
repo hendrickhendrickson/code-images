@@ -1,7 +1,8 @@
 import { array, scramble } from '../../utils/array.utils';
 import { objectEntries, objectFromEntries } from '../../utils/object.utils';
-import { defaultRuleSet, imagePixelSize, roles } from './game.consts';
+import { defaultRuleSet, roles } from './game.consts';
 import type { GameState, RuleSet, TeamId } from './game.interface';
+import { generateImageUrl } from './game.utils';
 
 export function initGame(ruleSet?: RuleSet): GameState {
 	ruleSet = ruleSet ?? defaultRuleSet;
@@ -49,8 +50,4 @@ function initBoard(ruleSet: RuleSet): GameState['board'] {
 		};
 	}
 	return board;
-}
-
-function generateImageUrl(): string {
-	return `https://picsum.photos/seed/${Math.random()}/${imagePixelSize}`;
 }

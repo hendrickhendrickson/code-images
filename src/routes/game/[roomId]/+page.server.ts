@@ -1,5 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { dbGet } from './room.db';
+import type { GameState } from '../game.interface';
 
 export async function load({ params, depends }) {
 	depends('gameState');
@@ -9,7 +10,7 @@ export async function load({ params, depends }) {
 	if (gameState) {
 		return {
 			room: params.roomId,
-			gameState: JSON.parse(gameState)
+			gameState: JSON.parse(gameState) as GameState
 		};
 	}
 

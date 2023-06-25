@@ -4,6 +4,7 @@
 	import Badge from '@smui-extra/badge';
 	import Tooltip, { Wrapper } from '@smui/tooltip';
 	import { createEventDispatcher } from 'svelte';
+	import { thumbnailImagePixelSize } from '../game.consts';
 
 	const dispatch = createEventDispatcher();
 
@@ -22,14 +23,17 @@
 	function pick() {
 		dispatch('pick');
 	}
+	function viewDetailImage() {
+		dispatch('viewDetailImage');
+	}
 </script>
 
 <div class="card-display">
 	<div class="card-container">
 		<Card
-			style={`${imageColor ? `outline: ${imageColor} solid 3px` : ''};max-width: 160px;${
-				cardColor ? ` background-color: ${cardColor};` : ``
-			}`}
+			style={`${
+				imageColor ? `outline: ${imageColor} solid 3px` : ''
+			};width: ${thumbnailImagePixelSize}px;${cardColor ? ` background-color: ${cardColor};` : ``}`}
 			variant="outlined"
 		>
 			{#if playerMarks.length > 0}
@@ -40,14 +44,16 @@
 					>{playerMarks.length}</Badge
 				>
 			{/if}
-			<PrimaryAction on:click={() => toggleMark()}>
+			<PrimaryAction on:click={() => viewDetailImage()}>
 				<Media class="card-media-square" aspectRatio="square">
 					<MediaContent>
 						<Wrapper>
 							<img
 								src={imageUrl}
 								alt="img"
-								style={revealed ? `filter: url('#${imageColor}');` : ''}
+								style={`width: ${thumbnailImagePixelSize}px;height: ${thumbnailImagePixelSize}px;${
+									revealed ? `filter: url('#${imageColor}');` : ''
+								}`}
 							/>
 							{#if playerMarks.length > 0}
 								<Tooltip xPos="start" yPos="above">{playerMarks.join(', ')}</Tooltip>

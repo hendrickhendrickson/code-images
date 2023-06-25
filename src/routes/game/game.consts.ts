@@ -14,4 +14,5 @@ export const defaultRuleSet: Readonly<RuleSet> = {
 export const playerNameMinimumCharacterLength = 3;
 export const playerNameMaximumCharacterLength = 24;
 
-export const imagePixelSize = 160; // TODO should this be in here?
+export const thumbnailImagePixelSize = 160;
+export const detailImagePixelSize = 800;

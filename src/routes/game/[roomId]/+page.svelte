@@ -2,6 +2,7 @@
 	import CodeImageCard from './image.card.svelte';
 	import HistoryCard from './history.card.svelte';
 	import LoginModal from '../login/login.modal.svelte';
+	import DetailImageModal from './detailImage.modal.svelte';
 	import Textfield from '@smui/textfield';
 	import TextFieldIcon from '@smui/textfield/icon';
 	import Select, { Option } from '@smui/select';
@@ -9,7 +10,6 @@
 	import { objectKeys, objectValues } from '../../../utils/object.utils';
 	import { cardColor, teamColor } from '../../../theme/colors.consts';
 	import TeamCard from './team.card.svelte';
-	import Drawer, { Content as DrawerContent } from '@smui/drawer';
 	import { onMount } from 'svelte';
 	import { log } from '../../../utils/log.utils';
 	import axios from 'axios';
@@ -26,6 +26,7 @@
 
 	let codename = '';
 	let codenumber = '0';
+	let detailImageUrl: string | null = null;
 
 	export let data;
 
@@ -155,6 +156,11 @@ pointer-events: none;"
 <div style="text-align: center;">
 	<LoginModal />
 </div>
+
+<div style="text-align: center;">
+	<DetailImageModal imageUrl={detailImageUrl} on:close={() => (detailImageUrl = null)} />
+</div>
+
 <div class="drawer-container">
 	<div style="display: flex; flex-direction: column; gap: 10px">
 		<TeamCard
@@ -209,6 +215,7 @@ pointer-events: none;"
 					cardColor={cardColor(card.teamAssociation)}
 					on:toggleMark={() => act({ type: 'CardMark', card: card.id, active: !selfMarked })}
 					on:pick={() => act({ type: 'CardPick', card: card.id })}
+					on:viewDetailImage={() => (detailImageUrl = card.imageUrl)}
 				/>
 			{/each}
 		</div>
