@@ -19,7 +19,7 @@
 	import IconButton from '@smui/icon-button';
 	import Button from '@smui/button';
 	import { playerNameStore } from './playerName.store';
-	import { obfuscateGameState, teamName } from '../game.utils';
+	import { cardName, obfuscateGameState, teamName } from '../game.utils';
 	import { browser } from '$app/environment';
 	import { assert } from '../../../utils/assert.utils';
 	import Confetti from '../../../lib/Confetti.svelte';
@@ -206,6 +206,7 @@ pointer-events: none;"
 						role === 'spymaster' ||
 						clientGameState.phase !== 'clueGiven' ||
 						clientGameState.turn !== team}
+					cardName={cardName(card.id)}
 					playerMarks={card.playerMarks}
 					imageUrl={card.imageUrl}
 					{selfMarked}

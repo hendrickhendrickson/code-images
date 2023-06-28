@@ -1,8 +1,8 @@
 <script lang="ts">
 	import Card, { Content as CardContent } from '@smui/card';
 	import List, { Item, Text } from '@smui/list';
-	import { cardColor, teamColor } from '../../../theme/colors.consts';
-	import { teamName } from '../game.utils';
+	import { cardColor } from '../../../theme/colors.consts';
+	import { cardName, teamName } from '../game.utils';
 	import type { ClientGameState } from '../game.interface';
 
 	export let clientGameState: ClientGameState;
@@ -47,7 +47,7 @@
 										style={`color: ${cardColor(
 											clientGameState.board[historyEntry.card].teamAssociation
 										)}`}
-										>{historyEntry.card}
+										>{cardName(historyEntry.card)}
 									</span></Text
 								>
 							</Item>

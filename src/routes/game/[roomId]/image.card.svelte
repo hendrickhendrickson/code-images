@@ -9,6 +9,7 @@
 	const dispatch = createEventDispatcher();
 
 	export let disabled = false;
+	export let cardName: string;
 	export let imageUrl: string;
 	export let revealed: boolean;
 	export let cardColor: string | null;
@@ -36,6 +37,7 @@
 			};width: ${thumbnailImagePixelSize}px;${cardColor ? ` background-color: ${cardColor};` : ``}`}
 			variant="outlined"
 		>
+			<Badge position="inset" align="middle-start" color="secondary">{cardName}</Badge>
 			{#if playerMarks.length > 0}
 				<Badge
 					position="middle"

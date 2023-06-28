@@ -2,6 +2,7 @@ import { objectMap } from '../../utils/object.utils';
 import type { CardId, ClientGameState, GameState, TeamId } from './game.interface';
 import { faker } from '@faker-js/faker';
 import { detailImagePixelSize } from './game.consts';
+import { getAlphabetLetter } from '../../utils/string.utils';
 
 export function indexOfId(id: TeamId | CardId): number {
 	return +id.split('_')[1];
@@ -38,4 +39,8 @@ export function generateRandomRoomId(): string {
 
 export function generateImageUrl(): string {
 	return faker.image.urlPicsumPhotos({ width: detailImagePixelSize, height: detailImagePixelSize });
+}
+
+export function cardName(card: CardId): string {
+	return `${getAlphabetLetter(Math.floor(indexOfId(card) / 5) + 1)}${(indexOfId(card) % 5) + 1}`;
 }
