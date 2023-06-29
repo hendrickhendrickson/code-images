@@ -8,7 +8,7 @@
 	export let infinite = false;
 	export let delay = [0, 50];
 	export let colorRange = [0, 360];
-	export let colorArray: number[] = [];
+	export let colorArray: (number | string)[] = [];
 	export let amount = 50;
 	export let iterationCount: number | 'infinite' = 1;
 	export let fallDistance = '100px';

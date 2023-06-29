@@ -149,6 +149,7 @@ pointer-events: none;"
 			duration={4000}
 			amount={350}
 			fallDistance="100vh"
+			colorArray={[teamColor(winningTeams[0])]}
 		/>
 	</div>
 {/if}
@@ -179,7 +180,7 @@ pointer-events: none;"
 			<Button
 				variant="outlined"
 				style={`color: ${cardColor('team_0')}`}
-				on:click={() => act({ type: 'SpymasterPromote' })}
+				on:click={() => act({ type: 'SpymasterPromote', targets: 'self' })}
 			>
 				<Label>Become Spymaster</Label>
 			</Button>
@@ -280,7 +281,7 @@ pointer-events: none;"
 			<Button
 				variant="outlined"
 				style={`color: ${cardColor('team_1')}`}
-				on:click={() => act({ type: 'SpymasterPromote' })}
+				on:click={() => act({ type: 'SpymasterPromote', targets: 'self' })}
 			>
 				<Label>Become Spymaster</Label>
 			</Button>
