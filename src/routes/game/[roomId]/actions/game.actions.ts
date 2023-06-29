@@ -1,6 +1,6 @@
-import { deleteElement } from '../../../../utils/array.utils';
+import { deleteElement, scramble } from '../../../../utils/array.utils';
 import { assertUnreachable } from '../../../../utils/assert.utils';
-import { objectKeys, objectValues } from '../../../../utils/object.utils';
+import { objectEntries, objectKeys, objectValues } from '../../../../utils/object.utils';
 import {
 	playerNameMaximumCharacterLength,
 	playerNameMinimumCharacterLength
@@ -11,15 +11,18 @@ import type {
 	CardPickAction,
 	ClueGiveAction,
 	GameAction,
+	GameResetAction,
 	GameState,
 	PlayerId,
 	PlayerJoinAction,
+	SpymasterPromoteAction,
 	TeamSwitchAction
 } from '../../game.interface';
 import { nextTeam } from '../../game.utils';
 import { validateCodename } from '../../codename/codename.validation';
 import { initGame } from '../../game.init';
 import { timeout } from '../../../../utils/timeout.utils';
+import { repeat } from '../../../../utils/function.utils';
 
 export async function handleAction(
 	gameState: GameState,
@@ -34,7 +37,7 @@ export async function handleAction(
 		case 'TeamSwitch':
 			return handleTeamSwitch(gameState, actor, action);
 		case 'SpymasterPromote':
-			return handleSpymasterPromote(gameState, actor);
+			return handleSpymasterPromote(gameState, actor, action);
 		case 'CardMark':
 			return handleCardMark(gameState, actor, action);
 		case 'CardPick':
@@ -44,7 +47,9 @@ export async function handleAction(
 		case 'RoundSkip':
 			return handleRoundSkip(gameState, actor);
 		case 'GameReset':
-			return handleGameReset(gameState, actor);
+			return handleGameReset(gameState, actor, action);
+		case 'TeamsScramble':
+			return handleTeamsScramble(gameState, actor);
 		default:
 			return assertUnreachable(`unknown action type`);
 	}
@@ -112,6 +117,16 @@ export async function handlePlayerLeave(
 		return { success: false, failReason: 'player not in the game' };
 	}
 
+	const team = gameState.players[actor]?.team;
+	if (team) {
+		objectValues(gameState.teams[team]).forEach((players) => {
+			const index = players.indexOf(actor);
+			if (index !== -1) {
+				players.splice(index, 1);
+			}
+		});
+	}
+
 	delete gameState.players[actor];
 
 	return { success: true, updatedGameState: gameState };
@@ -154,29 +169,49 @@ export async function handleTeamSwitch(
 
 export async function handleSpymasterPromote(
 	gameState: GameState,
-	actor: PlayerId
+	actor: PlayerId,
+	action: SpymasterPromoteAction // TODO USE!!!
 ): Promise<ActionResult> {
 	if (!(actor in gameState.players)) {
 		return { success: false, failReason: 'player not in the game' };
 	}
 
-	const team = gameState.players[actor].team;
-	if (!team) {
-		return { success: false, failReason: 'player not assigned to a team' };
+	const targets: Array<PlayerId> = [];
+	if (action.targets === 'self') {
+		targets.push(actor);
+	} else if (action.targets === 'random') {
+		objectValues(gameState.teams).forEach((roles) => {
+			const candidates = [...roles.operatives];
+			repeat(gameState.ruleSet.maxSpymasterCount - roles.spymasters.length, () => {
+				if (candidates.length > 0) {
+					const randomPlayer = candidates.splice(Math.floor(Math.random() * candidates.length), 1);
+					targets.push(...randomPlayer);
+				}
+			});
+		});
+	} else {
+		targets.push(...action.targets);
 	}
 
-	if (gameState.players[actor].role !== 'operative') {
-		return { success: false, failReason: 'player must be operative to become spymaster' };
-	}
+	targets.forEach((target) => {
+		const team = gameState.players[target].team;
+		if (!team) {
+			return { success: false, failReason: 'player not assigned to a team' };
+		}
 
-	if (gameState.teams[team].spymasters.length >= gameState.ruleSet.maxSpymasterCount) {
-		return { success: false, failReason: 'team has reached the maximum number of spymasters' };
-	}
+		if (gameState.players[target].role !== 'operative') {
+			return { success: false, failReason: 'player must be operative to become spymaster' };
+		}
 
-	deleteElement(gameState.teams[team].operatives, actor);
+		if (gameState.teams[team].spymasters.length >= gameState.ruleSet.maxSpymasterCount) {
+			return { success: false, failReason: 'team has reached the maximum number of spymasters' };
+		}
 
-	gameState.teams[team].spymasters.push(actor);
-	gameState.players[actor].role = 'spymaster';
+		deleteElement(gameState.teams[team].operatives, target);
+
+		gameState.teams[team].spymasters.push(target);
+		gameState.players[target].role = 'spymaster';
+	});
 
 	return { success: true, updatedGameState: gameState };
 }
@@ -395,7 +430,8 @@ export async function handleRoundSkip(
 
 export async function handleGameReset(
 	gameState: GameState,
-	actor: PlayerId
+	actor: PlayerId,
+	action: GameResetAction
 ): Promise<ActionResult> {
 	// action validation
 	if (!(actor in gameState.players)) {
@@ -408,5 +444,37 @@ export async function handleGameReset(
 	newGameState.players = gameState.players;
 	newGameState.teams = gameState.teams;
 
+	if (!action.keepSpymasters) {
+		objectValues(newGameState.teams).forEach((roles) => {
+			roles.operatives.push(...roles.spymasters.splice(0, roles.spymasters.length));
+		});
+	}
+
 	return { success: true, updatedGameState: newGameState };
+}
+
+export async function handleTeamsScramble(
+	gameState: GameState,
+	actor: PlayerId
+): Promise<ActionResult> {
+	// action validation
+	if (!(actor in gameState.players)) {
+		return { success: false, failReason: 'player not in the game' };
+	}
+
+	// action execution
+	let operatives: Array<PlayerId> = [];
+	objectValues(gameState.teams).forEach((roles) => {
+		operatives.push(...roles.operatives.splice(0, roles.operatives.length));
+	});
+
+	operatives = scramble(operatives);
+
+	operatives.forEach((operative, index) => {
+		const team = `team_${index % gameState.ruleSet.teamCount}` as const;
+		gameState.teams[team].operatives.push(operative);
+		gameState.players[operative].team = team;
+	});
+
+	return { success: true, updatedGameState: gameState };
 }

@@ -112,7 +112,8 @@ export type GameAction =
 	| CardPickAction
 	| ClueGiveAction
 	| RoundSkipAction
-	| GameResetAction;
+	| GameResetAction
+	| TeamsScrambleAction;
 
 export type PlayerJoinAction = {
 	type: 'PlayerJoin';
@@ -130,6 +131,7 @@ export type TeamSwitchAction = {
 
 export type SpymasterPromoteAction = {
 	type: 'SpymasterPromote';
+	targets: 'self' | 'random' | Array<PlayerId>;
 };
 
 export type CardMarkAction = {
@@ -154,4 +156,9 @@ export type RoundSkipAction = {
 
 export type GameResetAction = {
 	type: 'GameReset';
+	keepSpymasters: boolean;
+};
+
+export type TeamsScrambleAction = {
+	type: 'TeamsScramble';
 };
