@@ -13,12 +13,13 @@ import type {
 	GameAction,
 	GameResetAction,
 	GameState,
+	ImageRegenerateAction,
 	PlayerId,
 	PlayerJoinAction,
 	SpymasterPromoteAction,
 	TeamSwitchAction
 } from '../../game.interface';
-import { nextTeam } from '../../game.utils';
+import { generateImageUrl, nextTeam } from '../../game.utils';
 import { validateCodename } from '../../codename/codename.validation';
 import { initGame } from '../../game.init';
 import { timeout } from '../../../../utils/timeout.utils';
@@ -50,6 +51,8 @@ export async function handleAction(
 			return handleGameReset(gameState, actor, action);
 		case 'TeamsScramble':
 			return handleTeamsScramble(gameState, actor);
+		case 'ImageRegenerate':
+			return handleImageRegenerate(gameState, actor, action);
 		default:
 			return assertUnreachable(`unknown action type`);
 	}
@@ -474,6 +477,26 @@ export async function handleTeamsScramble(
 		const team = `team_${index % gameState.ruleSet.teamCount}` as const;
 		gameState.teams[team].operatives.push(operative);
 		gameState.players[operative].team = team;
+	});
+
+	return { success: true, updatedGameState: gameState };
+}
+
+export async function handleImageRegenerate(
+	gameState: GameState,
+	actor: PlayerId,
+	action: ImageRegenerateAction
+): Promise<ActionResult> {
+	// action validation
+	if (!(actor in gameState.players)) {
+		return { success: false, failReason: 'player not in the game' };
+	}
+
+	// action execution
+	action.cards.forEach((card) => {
+		if (gameState.board[card]) {
+			gameState.board[card].imageUrl = generateImageUrl();
+		}
 	});
 
 	return { success: true, updatedGameState: gameState };

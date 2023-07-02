@@ -113,7 +113,8 @@ export type GameAction =
 	| ClueGiveAction
 	| RoundSkipAction
 	| GameResetAction
-	| TeamsScrambleAction;
+	| TeamsScrambleAction
+	| ImageRegenerateAction;
 
 export type PlayerJoinAction = {
 	type: 'PlayerJoin';
@@ -161,4 +162,9 @@ export type GameResetAction = {
 
 export type TeamsScrambleAction = {
 	type: 'TeamsScramble';
+};
+
+export type ImageRegenerateAction = {
+	type: 'ImageRegenerate';
+	cards: Array<CardId>;
 };
