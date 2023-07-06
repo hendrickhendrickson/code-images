@@ -42,5 +42,5 @@ export function generateImageUrl(): string {
 }
 
 export function cardName(card: CardId): string {
-	return `${getAlphabetLetter(Math.floor(indexOfId(card) / 5) + 1)}${(indexOfId(card) % 5) + 1}`;
+	return `${getAlphabetLetter((indexOfId(card) % 5) + 1)}${Math.floor(indexOfId(card) / 5) + 1}`;
 }
